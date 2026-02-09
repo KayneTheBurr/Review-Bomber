@@ -1,0 +1,78 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1986186508229149182
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5413717678879974092}
+  - component: {fileID: 2503287989663052145}
+  m_Layer: 0
+  m_Name: UIManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5413717678879974092
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1986186508229149182}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.29938, y: 0.04805, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2503287989663052145
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1986186508229149182}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27930c0cc10a645458707f2d1ca0e94a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIManager
+  p1Name: {fileID: 0}
+  p2Name: {fileID: 0}
+  p3Name: {fileID: 0}
+  p4Name: {fileID: 0}
+  p5Name: {fileID: 0}
+  p6Name: {fileID: 0}
+  p7Name: {fileID: 0}
+  p8Name: {fileID: 0}
+  p9Name: {fileID: 0}
+  p10Name: {fileID: 0}
+  theme: {fileID: 0}
+  prompt: {fileID: 0}
+  finalPrompt: {fileID: 0}
+  finalReview: {fileID: 0}
+  starImage: {fileID: 0}
+  oneStar: {fileID: 21300000, guid: 850691b9dd0ac0b4d91266f6197147be, type: 3}
+  twoStar: {fileID: 21300000, guid: 28860d9c52714f446bbcbc1e07c04519, type: 3}
+  threeStar: {fileID: 21300000, guid: 43c52c540ba250a488e95d79b4009a97, type: 3}
+  fourStar: {fileID: 21300000, guid: 1df4d3394e31dab44a9d04a26d3f7fa2, type: 3}
+  fiveStar: {fileID: 21300000, guid: 3335fb8b2bb77664796633728de5ea93, type: 3}
+  firstPlacePrompt: {fileID: 0}
+  firstPlaceReview: {fileID: 0}
+  firstPlaceStarRank: {fileID: 0}
+  firstPlaceScore: {fileID: 0}
+  secondPlacePrompt: {fileID: 0}
+  secondPlaceReview: {fileID: 0}
+  secondPlaceStarRank: {fileID: 0}
+  secondPlaceScore: {fileID: 0}
+  thirdPlacePrompt: {fileID: 0}
+  thirdPlaceReview: {fileID: 0}
+  thirdPlaceStarRank: {fileID: 0}
+  thirdPlaceScore: {fileID: 0}
