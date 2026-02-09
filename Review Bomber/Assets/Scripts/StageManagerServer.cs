@@ -36,6 +36,10 @@ public class StageManagerServer : MonoBehaviour
     public string listenAddress = "0.0.0.0";
     public int port = 8080;
 
+    [Header("Themes and Prompts List")]
+    public List<ThemePrompt> themePrompts;
+    private ThemePrompt currentThemePrompt;
+
     [Header("Review Bomber Settings")]
     public string theme = "Review Bomber";
     private bool themeTimerRequested = false;
@@ -62,6 +66,35 @@ public class StageManagerServer : MonoBehaviour
 
     //debugging trying to fix randomizer giving an error bc of fleck things
     private readonly System.Random _rng = new System.Random();
+
+    void PickThemeAndPromptForRound()
+    {
+        if (themePrompts == null || themePrompts.Count == 0)
+        {
+            currentThemePrompt = new ThemePrompt
+            {
+                theme = "Default Theme",
+                promptTemplate = "Don't let your {A} ever cause {B} again!"
+            };
+            return;
+        }
+        else
+        {
+            int index = _rng.Next(themePrompts.Count);
+            currentThemePrompt = themePrompts[index];
+
+        }
+        theme = currentThemePrompt.theme;
+        prompt = currentThemePrompt.promptTemplate;
+
+        if (string.IsNullOrEmpty(prompt) || !prompt.Contains("{A}") || !prompt.Contains("{B}"))
+        {
+            Debug.LogError($"[Server] PromptTemplate missing {{A}} or {{B}}: '{prompt}'");
+            prompt = "Don't let your {A} ever cause {B} again!";
+        }
+
+        Debug.Log($"[Server] Selected Theme: {currentThemePrompt.theme}");
+    }
 
     // ------------------------
     // Player + Round structures
@@ -121,6 +154,10 @@ public class StageManagerServer : MonoBehaviour
 
     // Auto-advance counter: counts submissions/votes expected per step
     private int responsesReceived = 0;
+
+
+    
+
 
     // ------------------------
     // Unity Start
@@ -304,6 +341,7 @@ public class StageManagerServer : MonoBehaviour
             case SceneState.Lobby:
                 Debug.Log("[Server] Transition Lobby -> Theme");
                 StartNewRound();
+                PickThemeAndPromptForRound();
                 currentState = SceneState.Theme;
                 themeTimerRequested = true;
                 break;
@@ -338,6 +376,7 @@ public class StageManagerServer : MonoBehaviour
 
             case SceneState.Results:
                 Debug.Log("[Server] Transition Results -> Theme");
+                PickThemeAndPromptForRound();
                 currentState = SceneState.Theme;
                 themeTimerRequested = true;
                 break;
@@ -717,4 +756,10 @@ public class StageManagerServer : MonoBehaviour
         // Results
         public string resultsText;
     }
+}
+[Serializable]
+public class ThemePrompt
+{
+    public string theme;
+    [TextArea] public string promptTemplate;
 }

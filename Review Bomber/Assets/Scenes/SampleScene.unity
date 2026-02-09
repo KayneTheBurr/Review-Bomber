@@ -407,7 +407,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1056427914652524724, guid: d4b6cbdd68908be4f9122cad6ac774b7, type: 3}
       propertyPath: m_fontSize
-      value: 17.9
+      value: 55.95
       objectReference: {fileID: 0}
     - target: {fileID: 1056427914652524724, guid: d4b6cbdd68908be4f9122cad6ac774b7, type: 3}
       propertyPath: m_fontSizeMax
@@ -538,6 +538,26 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3573332086562962725, guid: 43cdacf7aee4c6d41adb5fd757340f0b, type: 3}
+      propertyPath: themePrompts.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3573332086562962725, guid: 43cdacf7aee4c6d41adb5fd757340f0b, type: 3}
+      propertyPath: themePrompts.Array.data[0].theme
+      value: Cats
+      objectReference: {fileID: 0}
+    - target: {fileID: 3573332086562962725, guid: 43cdacf7aee4c6d41adb5fd757340f0b, type: 3}
+      propertyPath: themePrompts.Array.data[1].theme
+      value: Next Thing
+      objectReference: {fileID: 0}
+    - target: {fileID: 3573332086562962725, guid: 43cdacf7aee4c6d41adb5fd757340f0b, type: 3}
+      propertyPath: themePrompts.Array.data[0].promptTemplate
+      value: Oh no, not a {A}! Make sure you always {B}!
+      objectReference: {fileID: 0}
+    - target: {fileID: 3573332086562962725, guid: 43cdacf7aee4c6d41adb5fd757340f0b, type: 3}
+      propertyPath: themePrompts.Array.data[1].promptTemplate
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 4515861995331079312, guid: 43cdacf7aee4c6d41adb5fd757340f0b, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
