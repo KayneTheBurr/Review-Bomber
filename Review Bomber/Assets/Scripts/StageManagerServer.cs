@@ -59,6 +59,15 @@ public class StageManagerServer : MonoBehaviour
     // Tip: prefer using {A} and {B} tokens, e.g. "Don't let your {A} ever cause {B} again!"
     public string prompt = "Dont let your {A} ever cause {B} again!";
 
+    [Header("Sound Effects")] //SFX related codes will be started from line 570, under UpdateUI Logics
+    public AudioSource countDownSource; //AudioSource for playing countdown SFX during the Theme phase.    
+    public AudioSource sfxSource; //AudioSource for playing SFX on the host machine (e.g. player join).
+    public List<AudioClip> playerJoinSFXList; //List of SFX for whenver player is joining the lobby. One will be randomly selected from this list.
+    public AudioClip stateChangeSFX; //SFX for whenever the game state changes (e.g. Lobby -> Theme, Prompt -> Review, etc).
+    public AudioClip countDownSFX; //SFX for the countdown during the phases
+    
+
+
     // No unicode in buttons; just ints
     public int[] starButtons = new int[] { 1, 2, 3, 4, 5 };
 
@@ -232,8 +241,9 @@ public class StageManagerServer : MonoBehaviour
 
                     players[socket] = p;
                     RebuildOrderedConnections();
-
                     RefreshConnectedClientsDebug();
+
+                    PlayPlayerJoinSFX();
 
                     SendStateTo(socket);
                     UpdateHostUI();
@@ -394,6 +404,7 @@ public class StageManagerServer : MonoBehaviour
     }
     IEnumerator ThemeCountdown()
     {
+        PlayCountDownSFX();
         yield return new WaitForSeconds(themeDurationSeconds);
 
         if (currentState == SceneState.Theme)
@@ -556,6 +567,35 @@ public class StageManagerServer : MonoBehaviour
             };
         }
     }
+
+
+    //SFX Related Methods
+
+    void PlayPlayerJoinSFX()
+    {
+        if(sfxSource != null && playerJoinSFXList != null)
+        {
+            int randomInt = UnityEngine.Random.Range(0, playerJoinSFXList.Count);
+            sfxSource.PlayOneShot(playerJoinSFXList[randomInt]);
+        }
+    }
+
+    void PlayStateChangeSFX()
+        {
+            if(sfxSource != null && stateChangeSFX != null)
+            {
+                sfxSource.PlayOneShot(stateChangeSFX);
+            }
+    }
+
+    void PlayCountDownSFX()
+    {
+        if(sfxSource != null && countDownSFX != null)
+        {
+            sfxSource.PlayOneShot(countDownSFX);
+        }
+    }
+
 
     // ------------------------
     // Phase input handling
