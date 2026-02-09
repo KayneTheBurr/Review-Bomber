@@ -6,6 +6,13 @@ public class UIManager : MonoBehaviour
 {
     public static UIManager instance;
 
+    [Header("UI Object Parents")]
+    public GameObject lobbyUI;
+    public GameObject themeUI;
+    public GameObject promptUI;
+    public GameObject voteUI;
+    public GameObject resultUI;
+
     [Header("Lobby UI Elements")]
     public TMP_Text p1Name;
     public TMP_Text p2Name;
@@ -56,5 +63,25 @@ public class UIManager : MonoBehaviour
     {
         if (instance == null) instance = this;
         else Destroy(gameObject);
+    }
+
+    public void ShowScreen(string screenName)
+    {
+        if (lobbyUI) lobbyUI.SetActive(false);
+        if (themeUI) themeUI.SetActive(false);
+        if (promptUI) promptUI.SetActive(false);
+        if (voteUI) voteUI.SetActive(false);
+        if (resultUI) resultUI.SetActive(false);
+
+        switch (screenName)
+        {
+            case "Lobby": if (lobbyUI) lobbyUI.SetActive(true); break;
+            case "Theme": if (themeUI) themeUI.SetActive(true); break;
+            case "Prompt": if (promptUI) promptUI.SetActive(true); break;
+            case "Review":  // you said Review reuses Vote UI
+            case "Vote": if (voteUI) voteUI.SetActive(true); break;
+            case "Results": if (resultUI) resultUI.SetActive(true); break;
+            default: if (lobbyUI) lobbyUI.SetActive(true); break;
+        }
     }
 }

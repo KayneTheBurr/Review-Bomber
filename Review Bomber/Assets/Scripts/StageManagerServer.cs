@@ -66,7 +66,7 @@ public class StageManagerServer : MonoBehaviour
     public AudioClip stateChangeSFX; //SFX for whenever the game state changes (e.g. Lobby -> Theme, Prompt -> Review, etc).
     public AudioClip resultStateSFX; //SFX for when the game enters the Results state.
     public AudioClip countDownSFX; //SFX for the countdown during the phases
-    
+
 
 
     // No unicode in buttons; just ints
@@ -87,10 +87,10 @@ public class StageManagerServer : MonoBehaviour
         get { return _currentState; }
         set
         {
-            if(_currentState != value)
+            if (_currentState != value)
             {
                 _currentState = value;
-                if(value == SceneState.Results)
+                if (value == SceneState.Results)
                 {
                     PlayResultsStateSFX();
                 }
@@ -101,7 +101,7 @@ public class StageManagerServer : MonoBehaviour
             }
         }
 
-    } 
+    }
     //debugging trying to fix randomizer giving an error bc of fleck things
     private readonly System.Random _rng = new System.Random();
 
@@ -442,6 +442,10 @@ public class StageManagerServer : MonoBehaviour
         if (!updateUnityHostUI) return;
         if (UIManager.instance == null) return;
 
+        // Ensure the correct Unity host screen is active for the current state.
+        // UIManager derives panel roots from your existing references and toggles them via SetActive().
+        UIManager.instance.ShowScreen(currentState.ToString());
+
         switch (currentState)
         {
             case SceneState.Lobby:
@@ -454,6 +458,11 @@ public class StageManagerServer : MonoBehaviour
 
             case SceneState.Prompt:
                 UpdatePromptUI();
+                break;
+
+            case SceneState.Review:
+                // UIManager currently has no separate Review references; we reuse the Vote screen fields.
+                UpdateVoteUI();
                 break;
 
             case SceneState.Vote:
@@ -594,7 +603,7 @@ public class StageManagerServer : MonoBehaviour
 
     void PlayPlayerJoinSFX()
     {
-        if(sfxSource != null && playerJoinSFXList != null)
+        if (sfxSource != null && playerJoinSFXList != null)
         {
             int randomInt = UnityEngine.Random.Range(0, playerJoinSFXList.Count);
             sfxSource.PlayOneShot(playerJoinSFXList[randomInt]);
@@ -602,18 +611,18 @@ public class StageManagerServer : MonoBehaviour
     }
 
     void PlayStateChangeSFX()
+    {
+        if (sfxSource != null && stateChangeSFX != null)
         {
-            if(sfxSource != null && stateChangeSFX != null)
-            {
-                sfxSource.PlayOneShot(stateChangeSFX);
-            }
+            sfxSource.PlayOneShot(stateChangeSFX);
+        }
     }
 
     void PlayCountDownSFX(float duration)
     {
         duration = 5f;
 
-        if(countDownSource != null && countDownSFX != null)
+        if (countDownSource != null && countDownSFX != null)
         {
             countDownSource.clip = countDownSFX;
             countDownSource.Play();
@@ -632,7 +641,7 @@ public class StageManagerServer : MonoBehaviour
     IEnumerator StopCountDownAfter(float seconds)
     {
         yield return new WaitForSeconds(seconds);
-        if(countDownSource != null)
+        if (countDownSource != null)
         {
             countDownSource.Stop();
         }
@@ -755,6 +764,7 @@ public class StageManagerServer : MonoBehaviour
 
         }
         SendStateToAll();
+        UpdateHostUI();
         Debug.Log("[Server] Advanced to " + currentState);
     }
 
