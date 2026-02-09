@@ -24,6 +24,8 @@ using UnityEngine;
 using Fleck;
 using System.Collections.Generic;
 using System.Linq;
+using System.Collections;
+using System;
 
 public class StageManagerServer : MonoBehaviour
 {
@@ -36,6 +38,9 @@ public class StageManagerServer : MonoBehaviour
 
     [Header("Review Bomber Settings")]
     public string theme = "Review Bomber";
+    private bool themeTimerRequested = false;
+    private bool themeTimerRunning = false;
+    public float themeDurationSeconds = 10f;
 
     // Keep your variable name "prompt" (this is the tagline template)
     // Tip: prefer using {A} and {B} tokens, e.g. "Don't let your {A} ever cause {B} again!"
@@ -47,7 +52,7 @@ public class StageManagerServer : MonoBehaviour
     // ------------------------
     // Game state tracking
     // ------------------------
-    public enum SceneState { Lobby, Prompt, Review, Vote, Results, Wait }
+    public enum SceneState { Lobby, Theme, Prompt, Review, Vote, Results}
 
     // You asked about making this an enum: YES, it works fine.
     // JsonUtility will serialize it as an int (0,1,2...).
@@ -161,13 +166,6 @@ public class StageManagerServer : MonoBehaviour
                     }
                 }
 
-                // If too few players mid-round, fall back to Wait (simple & safe)
-                if (currentState != SceneState.Lobby && players.Count < 2)
-                {
-                    currentState = SceneState.Wait;
-                    responsesReceived = 0;
-                    Debug.Log("[Server] Not enough players; moving to Wait");
-                }
 
                 SendStateToAll();
             };
@@ -187,7 +185,7 @@ public class StageManagerServer : MonoBehaviour
                         break;
 
                     case "start":
-                        if (p.isFirst && (currentState == SceneState.Lobby || currentState == SceneState.Wait))
+                        if (p.isFirst && (currentState == SceneState.Lobby))
                         {
                             AdvanceState();
                         }
@@ -207,6 +205,30 @@ public class StageManagerServer : MonoBehaviour
         });
 
         Debug.Log($"[Server] StageManagerServer started on {url}");
+    }
+
+    private void Update()
+    {
+        if (currentState == SceneState.Theme && themeTimerRequested && !themeTimerRunning)
+        {
+            themeTimerRequested = false;
+            themeTimerRunning = true;
+            Debug.Log("[Server] Theme timer actually starting (main thread)");
+            StartCoroutine(ThemeCountdown());
+        }
+    }
+    IEnumerator ThemeCountdown()
+    {
+        yield return new WaitForSeconds(themeDurationSeconds);
+
+        if (currentState == SceneState.Theme)
+        {
+            Debug.Log("[Server] Theme timer finished, advancing to Prompt");
+            AdvanceState();
+            SendStateToAll();
+        }
+
+        themeTimerRunning = false;
     }
 
     // ------------------------
@@ -268,6 +290,8 @@ public class StageManagerServer : MonoBehaviour
         }
     }
 
+    
+
     // ------------------------
     // State transitions
     // ------------------------
@@ -278,7 +302,14 @@ public class StageManagerServer : MonoBehaviour
         switch (currentState)
         {
             case SceneState.Lobby:
-                Debug.Log("[Server] Transition Lobby -> Prompt");
+                Debug.Log("[Server] Transition Lobby -> Theme");
+                StartNewRound();
+                currentState = SceneState.Theme;
+                themeTimerRequested = true;
+                break;
+
+            case SceneState.Theme:
+                Debug.Log("[Server] Transition Theme -> Prompt");
                 StartNewRound();
                 currentState = SceneState.Prompt;
                 break;
@@ -306,17 +337,14 @@ public class StageManagerServer : MonoBehaviour
                 break;
 
             case SceneState.Results:
-                Debug.Log("[Server] Transition Results -> Wait");
-                currentState = SceneState.Wait;
+                Debug.Log("[Server] Transition Results -> Theme");
+                currentState = SceneState.Theme;
+                themeTimerRequested = true;
                 break;
 
-            case SceneState.Wait:
-                Debug.Log("[Server] Transition Wait -> Prompt");
-                StartNewRound();
-                currentState = SceneState.Prompt;
-                break;
+            
         }
-
+        SendStateToAll();
         Debug.Log("[Server] Advanced to " + currentState);
     }
 
@@ -536,7 +564,14 @@ public class StageManagerServer : MonoBehaviour
             resultsText = (currentState == SceneState.Results) ? BuildResultsSummary() : null
         };
 
-        conn.Send(JsonUtility.ToJson(state));
+        try
+        {
+            conn.Send(JsonUtility.ToJson(state));
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning("[Server] SendStateTo failed for a connection: " + ex.Message);
+        }
     }
 
     string BuildPromptTextForClient(Player p)
@@ -559,8 +594,8 @@ public class StageManagerServer : MonoBehaviour
             case SceneState.Results:
                 return "Results";
 
-            case SceneState.Wait:
-                return "Waiting... First player can start the next round.";
+            case SceneState.Theme:
+                return $"Theme: {theme}\nNext prompt in {themeDurationSeconds:0} seconds...";
 
             default:
                 return "";

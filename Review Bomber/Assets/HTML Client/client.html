@@ -163,8 +163,8 @@ function connect() {
         document.getElementById("resultsText").innerText = state.resultsText || "";
         break;
 
-      case "Wait":
-        showScreen("screenWait", serverMessage);
+      case "Theme":
+        showScreen("screenWait", serverMessage); // reuse same screen
         break;
 
       default:
