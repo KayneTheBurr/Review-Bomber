@@ -20,12 +20,15 @@
 //   We also send a string label for convenience.
 // - starButtons is an int[] {1,2,3,4,5} as requested.
 
-using UnityEngine;
 using Fleck;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Collections;
-using System;
+using System.Threading;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
 
 public class StageManagerServer : MonoBehaviour
 {
@@ -46,6 +49,7 @@ public class StageManagerServer : MonoBehaviour
     private bool themeTimerRunning = false;
     public float themeDurationSeconds = 10f;
 
+    [SerializeField] private bool updateUnityHostUI = true;
     // Keep your variable name "prompt" (this is the tagline template)
     // Tip: prefer using {A} and {B} tokens, e.g. "Don't let your {A} ever cause {B} again!"
     public string prompt = "Dont let your {A} ever cause {B} again!";
@@ -67,6 +71,13 @@ public class StageManagerServer : MonoBehaviour
     //debugging trying to fix randomizer giving an error bc of fleck things
     private readonly System.Random _rng = new System.Random();
 
+    private readonly Queue<Action> _mainThread = new Queue<Action>();
+    private readonly object _mtLock = new object();
+
+    private void RunOnMainThread(Action a)
+    {
+        lock (_mtLock) _mainThread.Enqueue(a);
+    }
     void PickThemeAndPromptForRound()
     {
         if (themePrompts == null || themePrompts.Count == 0)
@@ -171,73 +182,83 @@ public class StageManagerServer : MonoBehaviour
         {
             socket.OnOpen = () =>
             {
-                var p = new Player();
-
-                if (!firstAssigned)
+                RunOnMainThread(() =>
                 {
-                    p.isFirst = true;
-                    firstAssigned = true;
-                    Debug.Log("[Server] First player assigned");
-                }
+                    var p = new Player();
 
-                players[socket] = p;
-                RebuildOrderedConnections();
-                SendStateTo(socket);
+                    if (!firstAssigned)
+                    {
+                        p.isFirst = true;
+                        firstAssigned = true;
+                        Debug.Log("[Server] First player assigned");
+                    }
+
+                    players[socket] = p;
+                    RebuildOrderedConnections();
+
+                    SendStateTo(socket);
+                    UpdateHostUI();
+                });
             };
 
             socket.OnClose = () =>
             {
-                bool wasFirst = players.ContainsKey(socket) && players[socket].isFirst;
-
-                players.Remove(socket);
-                RebuildOrderedConnections();
-
-                if (wasFirst)
+                RunOnMainThread(() =>
                 {
-                    firstAssigned = false;
-                    foreach (var kv in players)
+                    bool wasFirst = players.ContainsKey(socket) && players[socket].isFirst;
+
+                    players.Remove(socket);
+                    RebuildOrderedConnections();
+
+                    if (wasFirst)
                     {
-                        kv.Value.isFirst = true;
-                        firstAssigned = true;
-                        break;
+                        firstAssigned = false;
+                        foreach (var kv in players)
+                        {
+                            kv.Value.isFirst = true;
+                            firstAssigned = true;
+                            break;
+                        }
                     }
-                }
 
-
-                SendStateToAll();
+                    SendStateToAll();
+                    UpdateHostUI();
+                });
             };
 
             socket.OnMessage = message =>
             {
-                Incoming msg = JsonUtility.FromJson<Incoming>(message);
-                if (!players.ContainsKey(socket)) return;
-
-                Player p = players[socket];
-
-                switch (msg.type)
+                RunOnMainThread(() =>
                 {
-                    case "join":
-                        p.name = msg.name;
-                        Debug.Log($"[Server] join from {p.name}");
-                        break;
+                    Incoming msg = JsonUtility.FromJson<Incoming>(message);
+                    if (!players.ContainsKey(socket)) return;
 
-                    case "start":
-                        if (p.isFirst && (currentState == SceneState.Lobby))
-                        {
-                            AdvanceState();
-                        }
-                        break;
+                    Player p = players[socket];
 
-                    case "input":
-                        HandleInput(socket, p, msg);
-                        break;
+                    switch (msg.type)
+                    {
+                        case "join":
+                            p.name = msg.name;
+                            Debug.Log($"[Server] join from {p.name}");
+                            break;
 
-                    case "choice":
-                        HandleChoice(socket, p, msg);
-                        break;
-                }
+                        case "start":
+                            if (p.isFirst && (currentState == SceneState.Lobby))
+                                AdvanceState();
+                            break;
 
-                SendStateToAll();
+                        case "input":
+                            HandleInput(socket, p, msg);
+                            break;
+
+                        case "choice":
+                            HandleChoice(socket, p, msg);
+                            break;
+                    }
+
+                    SendStateToAll();
+                    UpdateHostUI();
+                });
             };
         });
 
@@ -246,6 +267,15 @@ public class StageManagerServer : MonoBehaviour
 
     private void Update()
     {
+        lock (_mtLock)
+        {
+            while (_mainThread.Count > 0)
+            {
+                var a = _mainThread.Dequeue();
+                a?.Invoke();
+            }
+        }
+
         if (currentState == SceneState.Theme && themeTimerRequested && !themeTimerRunning)
         {
             themeTimerRequested = false;
@@ -266,6 +296,157 @@ public class StageManagerServer : MonoBehaviour
         }
 
         themeTimerRunning = false;
+    }
+    private void UpdateHostUI() //UI Update Methods;
+    {
+        if (!updateUnityHostUI) return;
+        if (UIManager.instance == null) return;
+
+        switch (currentState)
+        {
+            case SceneState.Lobby:
+                UpdateLobbyUI();
+                break;
+
+            case SceneState.Theme:
+                UpdateThemeUI();
+                break;
+
+            case SceneState.Prompt:
+                UpdatePromptUI();
+                break;
+
+            case SceneState.Vote:
+                UpdateVoteUI();
+                break;
+
+            case SceneState.Results:
+                UpdateResultsUI();
+                break;
+        }
+    }
+
+    private void UpdateLobbyUI()
+    {
+        var ui = UIManager.instance;
+
+        RebuildOrderedConnections();
+        TMP_Text[] slots =
+        {
+        ui.p1Name, ui.p2Name, ui.p3Name, ui.p4Name, ui.p5Name,
+        ui.p6Name, ui.p7Name, ui.p8Name, ui.p9Name, ui.p10Name
+    };
+
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (slots[i] == null) continue;
+
+            if (i < orderedConnections.Count)
+            {
+                var p = players[orderedConnections[i]];
+                string n = string.IsNullOrWhiteSpace(p.name) ? $"Player {i + 1}" : p.name;
+                slots[i].text = n;
+            }
+            else
+            {
+                slots[i].text = "-";
+            }
+        }
+    }
+
+    private void UpdateThemeUI()
+    {
+        var ui = UIManager.instance;
+        if (ui.theme != null)
+            ui.theme.text = theme;
+    }
+    private void UpdatePromptUI()
+    {
+        var ui = UIManager.instance;
+        if (ui.prompt != null)
+            ui.prompt.text = prompt; // this is the template with {A}/{B}
+    }
+
+    private void UpdateVoteUI()
+    {
+        var ui = UIManager.instance;
+
+        if (ui.finalPrompt != null) ui.finalPrompt.text = GetCurrentEntryTagline();
+        if (ui.finalReview != null) ui.finalReview.text = GetCurrentEntryReview();
+
+        // If you want the star image to show *average so far* for the current entry:
+        if (ui.starImage != null && entries != null && currentEntryIndex >= 0 && currentEntryIndex < entries.Count)
+        {
+            float avg = entries[currentEntryIndex].AverageStars; // 0..5
+            int rounded = Mathf.Clamp(Mathf.RoundToInt(avg), 1, 5);
+
+            ui.starImage.enabled = (entries[currentEntryIndex].ratings.Count > 0);
+            ui.starImage.sprite = rounded switch
+            {
+                1 => ui.oneStar,
+                2 => ui.twoStar,
+                3 => ui.threeStar,
+                4 => ui.fourStar,
+                _ => ui.fiveStar
+            };
+        }
+    }
+
+    private void UpdateResultsUI()
+    {
+        var ui = UIManager.instance;
+        if (entries == null || entries.Count == 0) return;
+
+        var ranked = entries
+            .OrderByDescending(e => e.AverageStars)
+            .ToList();
+
+        ApplyResultSlot(
+            ranked, 0,
+            ui.firstPlacePrompt, ui.firstPlaceReview, ui.firstPlaceStarRank, ui.firstPlaceScore);
+
+        ApplyResultSlot(
+            ranked, 1,
+            ui.secondPlacePrompt, ui.secondPlaceReview, ui.secondPlaceStarRank, ui.secondPlaceScore);
+
+        ApplyResultSlot(
+            ranked, 2,
+            ui.thirdPlacePrompt, ui.thirdPlaceReview, ui.thirdPlaceStarRank, ui.thirdPlaceScore);
+    }
+
+    private void ApplyResultSlot(
+        List<Entry> ranked, int idx,
+        TMP_Text promptText, TMP_Text reviewText, Image starImg, TMP_Text scoreText)
+    {
+        if (promptText == null && reviewText == null && starImg == null && scoreText == null) return;
+
+        if (idx >= ranked.Count)
+        {
+            if (promptText != null) promptText.text = "-";
+            if (reviewText != null) reviewText.text = "";
+            if (scoreText != null) scoreText.text = "";
+            if (starImg != null) starImg.enabled = false;
+            return;
+        }
+
+        var e = ranked[idx];
+        if (promptText != null) promptText.text = e.promptFinal ?? "";
+        if (reviewText != null) reviewText.text = e.reviewText ?? "";
+        if (scoreText != null) scoreText.text = e.AverageStars.ToString("0.00");
+
+        if (starImg != null && UIManager.instance != null)
+        {
+            int rounded = Mathf.Clamp(Mathf.RoundToInt(e.AverageStars), 1, 5);
+            starImg.enabled = true;
+            starImg.sprite = rounded switch
+            {
+                1 => UIManager.instance.oneStar,
+                2 => UIManager.instance.twoStar,
+                3 => UIManager.instance.threeStar,
+                4 => UIManager.instance.fourStar,
+                _ => UIManager.instance.fiveStar
+            };
+        }
     }
 
     // ------------------------
