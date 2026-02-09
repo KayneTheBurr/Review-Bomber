@@ -1,293 +1,685 @@
 // StageManagerServer.cs
-// Author: ChatGPT
-// Description:
-//   This Unity MonoBehaviour hosts a minimal WebSocket server for a multiplayer game.
-//   The server manages connected players, tracks the current game phase (scene),
-//   collects player input and votes, and broadcasts state updates to clients.
+// Review Bomber - minimal LAN party game server (Unity + Fleck)
+//
+// Scenes:
+//   Lobby   -> Prompt  (fill in blanks A/B for tagline)
+//          -> Review  (write a review for someone else's tagline, with an assigned rating)
+//          -> Vote    (rate each entry 1-5 stars; sequential "Option A")
+//          -> Results -> Wait -> Prompt ...
+//
+// Client messages (kept intentionally generic):
+//   { type:"join",  name:"Kaine" }
+//   { type:"start" }
+//   { type:"input", a:"interns", b:"crunch" }     // Prompt scene
+//   { type:"input", text:"This ruined my life" }    // Review scene
+//   { type:"choice", index:3 }                      // Vote scene: index 0..4 => stars 1..5
+//
+// Notes:
+// - No unicode stars are used (to avoid encoding/storage issues).
+// - ReviewRating is an enum; JsonUtility serializes it as an int by default.
+//   We also send a string label for convenience.
+// - starButtons is an int[] {1,2,3,4,5} as requested.
 
 using UnityEngine;
-using Fleck;               // WebSocket server library
+using Fleck;
 using System.Collections.Generic;
+using System.Linq;
 
 public class StageManagerServer : MonoBehaviour
 {
-	// ------------------------
-	// Inspector-exposed fields
-	// ------------------------
-	[Header("Network Settings")]
-	public string listenAddress = "0.0.0.0";	  // Address to listen on (0.0.0.0 binds all interfaces)
-	public int port = 8080;						  // Port for WebSocket connections
+    // ------------------------
+    // Inspector-exposed fields
+    // ------------------------
+    [Header("Network Settings")]
+    public string listenAddress = "0.0.0.0";
+    public int port = 8080;
 
-	// ------------------------
-	// Player data structure
-	// ------------------------
-	class Player
-	{
-		public string name;      // The display name of the player
-		public bool isFirst;     // Flag indicating if this is the first player to join
-		public string lastInput; // Stores the text submitted in the Prompt phase
-		public int? lastVote;    // Stores the index of the button the player chose in the Vote phase
-	}
+    [Header("Review Bomber Settings")]
+    public string theme = "Review Bomber";
 
-	// Dictionary mapping each WebSocket connection to its Player object
-	// All player state for the current round is stored here
-	private Dictionary<IWebSocketConnection, Player> players = new Dictionary<IWebSocketConnection, Player>();
+    // Keep your variable name "prompt" (this is the tagline template)
+    // Tip: prefer using {A} and {B} tokens, e.g. "Don't let your {A} ever cause {B} again!"
+    public string prompt = "Dont let your {A} ever cause {B} again!";
 
-	// ------------------------
-	// Game state tracking
-	// ------------------------
-	// Enumeration of the different game phases (scenes)
-	public enum SceneState { Lobby, Prompt, Vote, Wait }
+    // No unicode in buttons; just ints
+    public int[] starButtons = new int[] { 1, 2, 3, 4, 5 };
 
-	// Current scene
-	public SceneState currentState = SceneState.Lobby;
+    // ------------------------
+    // Game state tracking
+    // ------------------------
+    public enum SceneState { Lobby, Prompt, Review, Vote, Results, Wait }
 
-	// Tracks whether the first player has already been assigned
-	private bool firstAssigned = false;
+    // You asked about making this an enum: YES, it works fine.
+    // JsonUtility will serialize it as an int (0,1,2...).
+    public enum ReviewRating { Good = 0, Average = 1, Bad = 2 }
 
-	// Fleck WebSocket server instance
-	private WebSocketServer server;
+    public SceneState currentState = SceneState.Lobby;
 
-	// ------------------------
-	// Auto-advance tracking
-	// ------------------------
-	private int responsesReceived = 0; // counts inputs or votes in the current scene
+    //debugging trying to fix randomizer giving an error bc of fleck things
+    private readonly System.Random _rng = new System.Random();
+
+    // ------------------------
+    // Player + Round structures
+    // ------------------------
+    class Player
+    {
+        public string name;
+        public bool isFirst;
+
+        // Prompt phase inputs
+        public string blankA;
+        public string blankB;
+
+        // Review phase assignment
+        public int assignedEntryIndex = -1;
+        public ReviewRating rating = ReviewRating.Average;
+        public string reviewText = "";
+
+        // Vote phase
+        public bool hasVotedThisEntry = false;
+    }
+
+    class Entry
+    {
+        public int playerIndex;          // author index (in orderedConnections)
+        public string playerName;        // author name
+        public string promptFinal;       // resolved tagline
+
+        public string reviewerName;      // who wrote the review
+        public ReviewRating reviewRating;
+        public string reviewText;
+
+        // Ratings from all players: playerName -> stars
+        public Dictionary<string, int> ratings = new Dictionary<string, int>();
+
+        public float AverageStars
+        {
+            get
+            {
+                if (ratings == null || ratings.Count == 0) return 0f;
+                float sum = 0f;
+                foreach (var kv in ratings) sum += kv.Value;
+                return sum / ratings.Count;
+            }
+        }
+    }
+
+    // Connection -> Player
+    private Dictionary<IWebSocketConnection, Player> players = new Dictionary<IWebSocketConnection, Player>();
+    private bool firstAssigned = false;
+    private WebSocketServer server;
+
+    // Round state
+    private List<IWebSocketConnection> orderedConnections = new List<IWebSocketConnection>();
+    private List<Entry> entries = new List<Entry>();
+    private int currentEntryIndex = 0;
+
+    // Auto-advance counter: counts submissions/votes expected per step
+    private int responsesReceived = 0;
+
+    // ------------------------
+    // Unity Start
+    // ------------------------
+    void Start()
+    {
+        string url = $"ws://{listenAddress}:{port}";
+        server = new WebSocketServer(url);
+
+        server.Start(socket =>
+        {
+            socket.OnOpen = () =>
+            {
+                var p = new Player();
+
+                if (!firstAssigned)
+                {
+                    p.isFirst = true;
+                    firstAssigned = true;
+                    Debug.Log("[Server] First player assigned");
+                }
+
+                players[socket] = p;
+                RebuildOrderedConnections();
+                SendStateTo(socket);
+            };
+
+            socket.OnClose = () =>
+            {
+                bool wasFirst = players.ContainsKey(socket) && players[socket].isFirst;
+
+                players.Remove(socket);
+                RebuildOrderedConnections();
+
+                if (wasFirst)
+                {
+                    firstAssigned = false;
+                    foreach (var kv in players)
+                    {
+                        kv.Value.isFirst = true;
+                        firstAssigned = true;
+                        break;
+                    }
+                }
+
+                // If too few players mid-round, fall back to Wait (simple & safe)
+                if (currentState != SceneState.Lobby && players.Count < 2)
+                {
+                    currentState = SceneState.Wait;
+                    responsesReceived = 0;
+                    Debug.Log("[Server] Not enough players; moving to Wait");
+                }
+
+                SendStateToAll();
+            };
+
+            socket.OnMessage = message =>
+            {
+                Incoming msg = JsonUtility.FromJson<Incoming>(message);
+                if (!players.ContainsKey(socket)) return;
+
+                Player p = players[socket];
+
+                switch (msg.type)
+                {
+                    case "join":
+                        p.name = msg.name;
+                        Debug.Log($"[Server] join from {p.name}");
+                        break;
+
+                    case "start":
+                        if (p.isFirst && (currentState == SceneState.Lobby || currentState == SceneState.Wait))
+                        {
+                            AdvanceState();
+                        }
+                        break;
+
+                    case "input":
+                        HandleInput(socket, p, msg);
+                        break;
+
+                    case "choice":
+                        HandleChoice(socket, p, msg);
+                        break;
+                }
+
+                SendStateToAll();
+            };
+        });
+
+        Debug.Log($"[Server] StageManagerServer started on {url}");
+    }
+
+    // ------------------------
+    // Phase input handling
+    // ------------------------
+    void HandleInput(IWebSocketConnection conn, Player p, Incoming msg)
+    {
+        if (currentState == SceneState.Prompt)
+        {
+            // Two blanks A/B
+            p.blankA = msg.a;
+            p.blankB = msg.b;
+
+            responsesReceived++;
+
+            Debug.Log($"[Server] Prompt received: {responsesReceived}/{players.Count} from {(p.name ?? "(unnamed)")}");
+
+            if (responsesReceived >= players.Count)
+            {
+                AdvanceState();
+            }
+            return;
+        }
+
+        if (currentState == SceneState.Review)
+        {
+            p.reviewText = msg.text;
+
+            responsesReceived++;
+            if (responsesReceived >= players.Count)
+            {
+                AdvanceState();
+            }
+            return;
+        }
+    }
+
+    void HandleChoice(IWebSocketConnection conn, Player p, Incoming msg)
+    {
+        if (currentState != SceneState.Vote) return;
+        if (entries == null || entries.Count == 0) return;
+        if (currentEntryIndex < 0 || currentEntryIndex >= entries.Count) return;
+        if (p.hasVotedThisEntry) return;
+
+        // Vote index 0..4 => starButtons[index] (1..5)
+        int idx = Mathf.Clamp(msg.index, 0, starButtons.Length - 1);
+        int stars = starButtons[idx];
+
+        var e = entries[currentEntryIndex];
+        string voterName = string.IsNullOrEmpty(p.name) ? "(unnamed)" : p.name;
+
+        e.ratings[voterName] = stars;
+        p.hasVotedThisEntry = true;
+
+        responsesReceived++;
+        if (responsesReceived >= players.Count)
+        {
+            AdvanceVoteTargetOrFinish();
+        }
+    }
+
+    // ------------------------
+    // State transitions
+    // ------------------------
+    void AdvanceState()
+    {
+        responsesReceived = 0;
+
+        switch (currentState)
+        {
+            case SceneState.Lobby:
+                Debug.Log("[Server] Transition Lobby -> Prompt");
+                StartNewRound();
+                currentState = SceneState.Prompt;
+                break;
+
+            case SceneState.Prompt:
+                Debug.Log("[Server] Transition Prompt -> Review (about to BuildEntriesFromPrompt)");
+                BuildEntriesFromPrompt();
+                Debug.Log("[Server] Transition Prompt -> Review (about to AssignReviews)");
+                AssignReviews();
+                Debug.Log("[Server] Transition Prompt -> Review (setting state now)");
+                currentState = SceneState.Review;
+                break;
+
+            case SceneState.Review:
+                Debug.Log("[Server] Transition Review -> Vote");
+                ApplyReviewsToEntries();
+                BeginVoting();
+                currentState = SceneState.Vote;
+                break;
+
+            case SceneState.Vote:
+                Debug.Log("[Server] Transition Vote -> Results");
+                AdvanceVoteTargetOrFinish();
+                currentState = SceneState.Results;
+                break;
+
+            case SceneState.Results:
+                Debug.Log("[Server] Transition Results -> Wait");
+                currentState = SceneState.Wait;
+                break;
+
+            case SceneState.Wait:
+                Debug.Log("[Server] Transition Wait -> Prompt");
+                StartNewRound();
+                currentState = SceneState.Prompt;
+                break;
+        }
+
+        Debug.Log("[Server] Advanced to " + currentState);
+    }
+
+    void StartNewRound()
+    {
+        responsesReceived = 0;
+        currentEntryIndex = 0;
+        entries = new List<Entry>();
+
+        RebuildOrderedConnections();
+
+        foreach (var kv in players)
+        {
+            var p = kv.Value;
+            p.blankA = "";
+            p.blankB = "";
+            p.assignedEntryIndex = -1;
+            p.rating = ReviewRating.Average;
+            p.reviewText = "";
+            p.hasVotedThisEntry = false;
+        }
+
+        Debug.Log("[Server] New round started");
+    }
+
+    public void DebugAdvance()
+    {
+        AdvanceState();
+        SendStateToAll();
+    }
 
 
-	// ------------------------
-	// Unity Start method
-	// Initializes the WebSocket server
-	// ------------------------
-	void Start()
-	{
-		string url = $"ws://{listenAddress}:{port}";
-		server = new WebSocketServer(url);
+    // ------------------------
+    // Round building logic
+    // ------------------------
+    void BuildEntriesFromPrompt()
+    {
+        entries = new List<Entry>();
+        RebuildOrderedConnections();
 
-		// Start listening for connections
-		server.Start(socket =>
-		{
-			// ---------------------------------
-			// Client connected
-			// ---------------------------------
-			socket.OnOpen = () =>
-			{
-				Player p = new Player();
+        for (int i = 0; i < orderedConnections.Count; i++)
+        {
+            var conn = orderedConnections[i];
+            var p = players[conn];
 
-				// Assign the first player flag if not yet assigned
-				if (!firstAssigned)
-				{
-					p.isFirst = true;
-					firstAssigned = true;
-					Debug.Log("First player assigned");
-				}
+            string a = string.IsNullOrWhiteSpace(p.blankA) ? "____" : p.blankA.Trim();
+            string b = string.IsNullOrWhiteSpace(p.blankB) ? "____" : p.blankB.Trim();
 
-				// Add the new player to the dictionary
-				players[socket] = p;
+            string final = ResolvePromptTemplate(prompt, a, b);
 
-				// Send initial state to this client (Lobby)
-				SendStateTo(socket);
-			};
+            entries.Add(new Entry
+            {
+                playerIndex = i,
+                playerName = string.IsNullOrEmpty(p.name) ? $"Player{i + 1}" : p.name,
+                promptFinal = final
+            });
+        }
 
-			// ---------------------------------
-			// Client disconnected
-			// ---------------------------------
-			socket.OnClose = () =>
-			{
-				// Remove player from dictionary when they disconnect
-				players.Remove(socket);
-			};
+        Debug.Log($"[Server] Built {entries.Count} entries from Prompt");
+    }
 
-			// ---------------------------------
-			// Message received from client
-			// ---------------------------------
-			socket.OnMessage = message =>
-			{
-				// Deserialize incoming JSON to the Incoming class
-				Incoming msg = JsonUtility.FromJson<Incoming>(message);
+    // Handles both "{A}/{B}" token style and the user's original "A/B" style
+    string ResolvePromptTemplate(string template, string a, string b)
+    {
+        if (string.IsNullOrEmpty(template)) return $"{a} / {b}";
 
-				if (!players.ContainsKey(socket)) return; // Safety check
+        string t = template;
 
-				Player p = players[socket];
-				string playerName = string.IsNullOrEmpty(p.name) ? "(unnamed)" : p.name;
+        // Preferred token style
+        t = t.Replace("{A}", a).Replace("{B}", b);
 
-				// Handle message based on type
-				switch (msg.type)
-				{
-					case "join":
-						// Player submitted their name in the Lobby
-						p.name = msg.name;
-						Debug.Log($"[Server] Received join from {msg.name}");
-						break;
+        // Back-compat: " A " and " B " placeholders
+        // (We avoid a global Replace("A", ...) because that would destroy words.)
+        t = t.Replace(" A ", " " + a + " ");
+        t = t.Replace(" B ", " " + b + " ");
 
-					case "start":
-						// First player pressed "Start Game" button
-						Debug.Log($"[Server] Received start from {playerName}");
-						if (p.isFirst && currentState == SceneState.Lobby)
-							AdvanceState();
-						break;
+        // Edge cases: ending with A or B (rare, but safe)
+        if (t.EndsWith(" A")) t = t.Substring(0, t.Length - 2) + " " + a;
+        if (t.EndsWith(" B")) t = t.Substring(0, t.Length - 2) + " " + b;
 
-					case "input":
-						// Player submitted text in Prompt phase
-						if (currentState == SceneState.Prompt)
-							p.lastInput = msg.text;
-						Debug.Log($"[Server] Received input from {playerName}: \"{msg.text}\"");
-						IncrementAndCheckForAdvance();
-						break;
+        return t;
+    }
 
-					case "choice":
-						// Player submitted a vote in Vote phase
-						if (currentState == SceneState.Vote)
-							p.lastVote = msg.index;
-						Debug.Log($"[Server] Received vote from {playerName}: button index {msg.index}");
-						IncrementAndCheckForAdvance();
-						break;
+    void AssignReviews()
+    {
+        RebuildOrderedConnections();
+        int n = orderedConnections.Count;
 
-					default:
-						// Unknown message type
-						Debug.Log($"[Server] Received unknown message type '{msg.type}' from {playerName}");
-						break;
-				}
-			};
-		});
+        Debug.Log($"[Server] AssignReviews: orderedConnections={n}, players={players.Count}");
 
-		Debug.Log($"StageManagerServer started on {url}");
-	}
+        if (n < 2)
+        {
+            Debug.LogWarning("[Server] Need at least 2 players to assign reviews");
+            return;
+        }
 
-	// ------------------------
-	// Increment the counter and auto-advance if all players responded
-	// ------------------------
-	void IncrementAndCheckForAdvance()
-	{
-		responsesReceived++;
+        Debug.Log("Starting the assignment of reviews now...");
 
-		// Only auto-advance for Prompt or Vote scenes
-		if ((currentState == SceneState.Prompt || currentState == SceneState.Vote)
-			&& responsesReceived >= players.Count)
-		{
-			Debug.Log("All players responded; auto-advancing...");
-			AdvanceState();
-		}
-	}
+        for (int i = 0; i < n; i++)
+        {
+            try
+            {
+                Debug.Log("Assigning review for " + i);
+                var conn = orderedConnections[i];
 
-	// ------------------------
-	// Advance the game state
-	// ------------------------
-	// Moves from one scene to the next and broadcasts to all clients
-	public void AdvanceState()
-	{
-		responsesReceived = 0;	// clear for next collection
+                Debug.Log("Test A");
+                var p = players[conn];
+                Debug.Log("Test B");
 
-		// Cycle through states in order: Lobby -> Prompt -> Vote -> Wait -> Prompt -> ...
-		switch (currentState)
-		{
-			case SceneState.Lobby:
-				currentState = SceneState.Prompt;
-				break;
-			case SceneState.Prompt:
-				currentState = SceneState.Vote;
-				break;
-			case SceneState.Vote:
-				currentState = SceneState.Wait;
-				break;
-			case SceneState.Wait:
-				currentState = SceneState.Prompt; // wrap around after Wait
-				break;
-		}
+                p.assignedEntryIndex = (i + 1) % n;
+                Debug.Log("Test C");
 
-		Debug.Log("Advanced to " + currentState);
+                p.rating = (ReviewRating)_rng.Next(0, 3);
+                Debug.Log("Test D");
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError("[Server] AssignReviews exception at i=" + i + ": " + ex);
+                break;
+            }
+        }
 
-		// Broadcast updated state to all connected clients
-		SendStateToAll();
-	}
+        Debug.Log("[Server] Assigned review targets + ratings (done)");
+    }
 
-	// ------------------------
-	// Broadcast state to all clients
-	// ------------------------
-	void SendStateToAll()
-	{
-		foreach (var conn in players.Keys)
-			SendStateTo(conn);
-	}
+    void ApplyReviewsToEntries()
+    {
+        for (int i = 0; i < orderedConnections.Count; i++)
+        {
+            var conn = orderedConnections[i];
+            var p = players[conn];
 
-	// ------------------------
-	// Send state to a single client
-	// ------------------------
-	void SendStateTo(IWebSocketConnection conn)
-	{
-		Player p = players[conn];
+            if (p.assignedEntryIndex < 0 || p.assignedEntryIndex >= entries.Count) continue;
 
-		// Determine the prompt text dynamically based on current scene
-		string promptText;
-		switch (currentState)
-		{
-			case SceneState.Lobby:
-				promptText = "Enter your name to join.";
-				break;
-			case SceneState.Prompt:
-				promptText = "Type a line of dialogue.";
-				break;
-			case SceneState.Vote:
-				promptText = "Vote for the funniest line.";
-				break;
-			case SceneState.Wait:
-				promptText = "Waiting for the next round...";
-				break;
-			default:
-				promptText = "";
-				break;
-		}
+            var e = entries[p.assignedEntryIndex];
+            e.reviewerName = string.IsNullOrEmpty(p.name) ? $"Player{i + 1}" : p.name;
+            e.reviewRating = p.rating;
+            e.reviewText = string.IsNullOrWhiteSpace(p.reviewText) ? "(no review submitted)" : p.reviewText.Trim();
+        }
 
-		// Create the GameState object to send
-		GameState state = new GameState
-		{
-			scene = currentState.ToString(),                    // Current scene name as string
-			prompt = promptText,                                // Prompt text for this scene
-			isFirst = p.isFirst,                                // Whether this client is the first player
-			buttons = currentState == SceneState.Vote ? BuildVoteButtons() : null // Vote button labels if Vote phase
-		};
+        Debug.Log("[Server] Applied reviews to entries");
+    }
 
-		// Serialize to JSON and send to the client
-		conn.Send(JsonUtility.ToJson(state));
-	}
+    // ------------------------
+    // Voting (Option A sequential)
+    // ------------------------
+    void BeginVoting()
+    {
+        currentEntryIndex = 0;
+        ResetVotesForCurrentEntry();
+    }
 
-	// ------------------------
-	// Build button labels for Vote phase
-	// ------------------------
-	private List<string> BuildVoteButtons()
-	{
-		List<string> buttons = new List<string>();
+    void ResetVotesForCurrentEntry()
+    {
+        responsesReceived = 0;
+        foreach (var kv in players)
+            kv.Value.hasVotedThisEntry = false;
+    }
 
-		// Collect the lastInput from every player as a vote option
-		foreach (var pl in players.Values)
-		{
-			if (!string.IsNullOrEmpty(pl.lastInput))
-				buttons.Add(pl.lastInput);
-		}
+    void AdvanceVoteTargetOrFinish()
+    {
+        currentEntryIndex++;
 
-		return buttons;
-	}
+        if (currentEntryIndex >= entries.Count)
+        {
+            // Finished all entries
+            currentState = SceneState.Results;
+            responsesReceived = 0;
+            Debug.Log("[Server] Voting complete -> Results");
+            return;
+        }
 
-	// ------------------------
-	// Class representing messages received from clients
-	// ------------------------
-	[System.Serializable]
-	class Incoming
-	{
-		public string type; // "join", "start", "input", "choice"
-		public string name; // Player's name (for join)
-		public string text; // Text submitted (for input)
-		public int index;   // Button index (for choice)
-	}
+        ResetVotesForCurrentEntry();
+    }
 
-	// ------------------------
-	// Class representing the game state sent to clients
-	// ------------------------
-	[System.Serializable]
-	class GameState
-	{
-		public string scene;       // Current scene name
-		public string prompt;      // Prompt text
-		public bool isFirst;       // Whether this client is first player
-		public List<string> buttons; // Vote options if in Vote phase
-	}
+    // ------------------------
+    // Sending state to clients
+    // ------------------------
+    void SendStateToAll()
+    {
+        foreach (var conn in players.Keys)
+            SendStateTo(conn);
+    }
+
+    void SendStateTo(IWebSocketConnection conn)
+    {
+        Player p = players[conn];
+
+        GameState state = new GameState
+        {
+            scene = currentState.ToString(),
+            isFirst = p.isFirst,
+
+            theme = theme,
+            prompt = BuildPromptTextForClient(p),
+
+            // Prompt template (so client can display it if desired)
+            taglineTemplate = prompt,
+
+            // Review assignment for this player
+            assignedEntryIndex = p.assignedEntryIndex,
+            assignedTagline = GetAssignedTaglineFor(p),
+            reviewRating = (int)p.rating,
+            reviewRatingLabel = p.rating.ToString(),
+
+            // Vote display data
+            entryIndex = currentEntryIndex,
+            entryCount = entries != null ? entries.Count : 0,
+            currentTagline = GetCurrentEntryTagline(),
+            currentReview = GetCurrentEntryReview(),
+            currentReviewRating = GetCurrentEntryRatingLabel(),
+
+            // Buttons (ints) for Vote phase only
+            starButtons = (currentState == SceneState.Vote) ? starButtons : null,
+
+            // Results
+            resultsText = (currentState == SceneState.Results) ? BuildResultsSummary() : null
+        };
+
+        conn.Send(JsonUtility.ToJson(state));
+    }
+
+    string BuildPromptTextForClient(Player p)
+    {
+        // Keep this very simple; the phone UI can display more specific instructions
+        switch (currentState)
+        {
+            case SceneState.Lobby:
+                return "Enter your name to join.";
+
+            case SceneState.Prompt:
+                return "Fill in the two blanks for the tagline.";
+
+            case SceneState.Review:
+                return "Write a review that matches your assigned rating.";
+
+            case SceneState.Vote:
+                return "Rate the current entry 1-5.";
+
+            case SceneState.Results:
+                return "Results";
+
+            case SceneState.Wait:
+                return "Waiting... First player can start the next round.";
+
+            default:
+                return "";
+        }
+    }
+
+    string GetAssignedTaglineFor(Player p)
+    {
+        if (entries == null || entries.Count == 0) return "";
+        if (p.assignedEntryIndex < 0 || p.assignedEntryIndex >= entries.Count) return "";
+        return entries[p.assignedEntryIndex].promptFinal;
+    }
+
+    string GetCurrentEntryTagline()
+    {
+        if (entries == null || entries.Count == 0) return "";
+        if (currentEntryIndex < 0 || currentEntryIndex >= entries.Count) return "";
+        return entries[currentEntryIndex].promptFinal;
+    }
+
+    string GetCurrentEntryReview()
+    {
+        if (entries == null || entries.Count == 0) return "";
+        if (currentEntryIndex < 0 || currentEntryIndex >= entries.Count) return "";
+        return entries[currentEntryIndex].reviewText;
+    }
+
+    string GetCurrentEntryRatingLabel()
+    {
+        if (entries == null || entries.Count == 0) return "";
+        if (currentEntryIndex < 0 || currentEntryIndex >= entries.Count) return "";
+        return entries[currentEntryIndex].reviewRating.ToString();
+    }
+
+    string BuildResultsSummary()
+    {
+        if (entries == null || entries.Count == 0) return "No entries.";
+
+        var ranked = entries
+            .Select(e => new { name = e.playerName, avg = e.AverageStars })
+            .OrderByDescending(x => x.avg)
+            .ToList();
+
+        int count = Mathf.Min(3, ranked.Count);
+        string s = "";
+        for (int i = 0; i < count; i++)
+        {
+            s += $"{i + 1}) {ranked[i].name} - {ranked[i].avg:0.00}\n";
+        }
+        return s.TrimEnd();
+    }
+
+    // ------------------------
+    // Ordering
+    // ------------------------
+    void RebuildOrderedConnections()
+    {
+        orderedConnections = players.Keys.ToList();
+
+        // Stable-ish ordering by name, then hash
+        orderedConnections.Sort((a, b) =>
+        {
+            string an = players[a].name ?? "";
+            string bn = players[b].name ?? "";
+            int c = string.Compare(an, bn);
+            if (c != 0) return c;
+            return a.GetHashCode().CompareTo(b.GetHashCode());
+        });
+    }
+
+    // ------------------------
+    // DTOs
+    // ------------------------
+    [System.Serializable]
+    class Incoming
+    {
+        public string type; // join/start/input/choice
+        public string name; // join
+
+        // review submission
+        public string text;
+
+        // vote selection 0..4
+        public int index;
+
+        // Prompt blanks
+        public string a;
+        public string b;
+    }
+
+    [System.Serializable]
+    class GameState
+    {
+        public string scene;
+        public bool isFirst;
+
+        public string theme;
+        public string prompt;
+
+        // Prompt template
+        public string taglineTemplate;
+
+        // Review assignment
+        public int assignedEntryIndex;
+        public string assignedTagline;
+        public int reviewRating;
+        public string reviewRatingLabel;
+
+        // Vote target data (what the host should show)
+        public int entryIndex;
+        public int entryCount;
+        public string currentTagline;
+        public string currentReview;
+        public string currentReviewRating;
+
+        // Vote buttons: int[] 1..5
+        public int[] starButtons;
+
+        // Results
+        public string resultsText;
+    }
 }

@@ -1,232 +1,230 @@
-<!--
-Minimal Multiplayer Client (ChatGPT Authored)
-
-This client connects to a StageManagerServer via WebSocket to participate in a
-minimal hyper-casual multiplayer game with multiple phases: Lobby, Prompt,
-Vote, and Wait. Each phase is represented by a separate screen that is shown
-or hidden dynamically.
-
-Features:
-- Lobby: Enter player name; first player can start the game.
-- Prompt: Enter a line of dialogue.
-- Vote: Vote on previously submitted lines; all buttons disabled after selection.
-- Wait: Shows waiting message between rounds.
-- Automatically clears inputs and re-enables buttons when switching screens.
-- Receives state updates from the server and updates the UI accordingly.
-
-No game logic is handled on the client; the server maintains the authoritative
-state, and the client simply displays it and sends player actions.
-
-Usage Tips:
-- For local testing, set the server address to 127.0.0.1 in the client and server and
-  open multiple browser windows/tabs to simulate multiple players on the same machine.
-- For networked play, determine the server machine’s IP address on the network
-  (e.g., using `ipconfig` on Windows or `ifconfig`/`ip a` on Linux/Mac),
-  and set that IP in the client WebSocket URL so remote clients can connect.
-- Make sure the port number matches the server's listening port.
--->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Minimal Multiplayer Client</title>
+<title>Review Bomber Client</title>
 <style>
-/* -------------------------
-   Basic page styling
-   ------------------------- */
 body { font-family: sans-serif; padding: 20px; }
-
-/* Each "screen" is a separate view in the client.
-   Only one screen is visible at a time. */
 .screen { display: none; margin-bottom: 15px; }
-
-/* Simple margin for buttons */
 button { margin: 5px; }
+textarea { width: 100%; height: 140px; }
+.small { font-size: 0.9em; opacity: 0.85; }
+.box { border: 1px solid #ccc; padding: 10px; margin: 10px 0; }
 </style>
 </head>
 <body>
 
-<h1>Minimal Hyper-Casual Game</h1>
+<h1>Review Bomber (Client)</h1>
 
-<!-- -------------------------
-     Lobby Screen
-     Players enter their name here.
-     The first player also sees the "Start Game" button.
-     ------------------------- -->
+<!-- LOBBY -->
 <div id="screenLobby" class="screen">
-    <div id="sceneStateLobby" style="margin-bottom:15px;"></div> <!-- server message first -->
-    <label>Your Name:</label>
-    <input type="text" id="nameInput">
-    <button id="joinBtn">Join</button>
-    <button id="startBtn" style="display:none;">Start Game</button>
+  <div id="sceneStateLobby" style="margin-bottom:15px;"></div>
+  <label>Your Name:</label>
+  <input type="text" id="nameInput">
+  <button id="joinBtn">Join</button>
+  <button id="startBtn" style="display:none;">Start Game</button>
 </div>
 
-<!-- -------------------------
-     Prompt Screen
-     Players enter a line of dialogue.
-     ------------------------- -->
+<!-- PROMPT (TAGLINE BLANKS) -->
 <div id="screenPrompt" class="screen">
-    <div id="sceneStatePrompt" style="margin-bottom:15px;"></div> <!-- server message first -->
-    <label>Your Line:</label>
-    <input type="text" id="textInput">
-    <button id="sendBtn">Send Input</button>
+  <div id="sceneStatePrompt" style="margin-bottom:15px;"></div>
+
+  <div class="box">
+    <div class="small">Tagline Template:</div>
+    <div id="taglineTemplateText"></div>
+  </div>
+
+  <label>Blank A:</label>
+  <input type="text" id="blankAInput">
+  <br><br>
+  <label>Blank B:</label>
+  <input type="text" id="blankBInput">
+  <br><br>
+
+  <button id="sendPromptBtn">Submit Tagline</button>
 </div>
 
-<!-- -------------------------
-     Vote Screen
-     Displays buttons for each submitted line.
-     ------------------------- -->
+<!-- REVIEW -->
+<div id="screenReview" class="screen">
+  <div id="sceneStateReview" style="margin-bottom:15px;"></div>
+
+  <div class="box">
+    <div class="small">You are reviewing this tagline:</div>
+    <div id="assignedTaglineText"></div>
+  </div>
+
+  <div class="box">
+    <div class="small">Your required review tone:</div>
+    <div id="assignedToneText"></div>
+  </div>
+
+  <label>Your Review:</label>
+  <textarea id="reviewInput"></textarea>
+  <br>
+  <button id="sendReviewBtn">Submit Review</button>
+</div>
+
+<!-- VOTE (1–5 STARS) -->
 <div id="screenVote" class="screen">
-    <div id="sceneStateVote" style="margin-bottom:15px;"></div> <!-- server message first -->
-    <div id="votePrompt"></div>
-    <div id="voteButtons"></div>
+  <div id="sceneStateVote" style="margin-bottom:15px;"></div>
+
+  <div class="box">
+    <div class="small">Now rating entry <span id="voteIndex"></span> / <span id="voteCount"></span></div>
+    <div class="small">Tagline:</div>
+    <div id="currentTaglineText"></div>
+    <hr>
+    <div class="small">Review (<span id="currentReviewToneText"></span>):</div>
+    <div id="currentReviewText"></div>
+  </div>
+
+  <div id="voteButtons"></div>
 </div>
 
-<!-- -------------------------
-     Wait Screen
-     Shows a message while waiting for the next round.
-     ------------------------- -->
+<!-- RESULTS -->
+<div id="screenResults" class="screen">
+  <div id="sceneStateResults" style="margin-bottom:15px;"></div>
+  <div class="box">
+    <div class="small">Top Results:</div>
+    <pre id="resultsText" style="white-space:pre-wrap;"></pre>
+  </div>
+  <div class="small">Waiting for host to start next round…</div>
+</div>
+
+<!-- WAIT -->
 <div id="screenWait" class="screen">
-    <div id="sceneStateWait" style="margin-bottom:15px;"></div> <!-- server message first -->
-    <span>Waiting for next round...</span>
+  <div id="sceneStateWait" style="margin-bottom:15px;"></div>
+  <span>Waiting... (host can start next round)</span>
 </div>
 
 <script>
-// -------------------------
-// Global WebSocket reference
-// -------------------------
 let ws;
 
-// -------------------------
-// showScreen
-//   Displays a single screen and hides all others.
-//   Also clears any input fields and re-enables buttons in that screen.
-//   Displays the server message at the top of the screen.
-// -------------------------
 function showScreen(screenId, serverMessage) {
-    // Hide all screens
-    document.querySelectorAll(".screen").forEach(s => s.style.display = "none");
+  document.querySelectorAll(".screen").forEach(s => s.style.display = "none");
+  const screen = document.getElementById(screenId);
+  if (!screen) return;
 
-    // Show the requested screen
-    const screen = document.getElementById(screenId);
-    if (screen) {
-        screen.style.display = "block";
+  screen.style.display = "block";
 
-        // Display the server message at the top of this screen
-        const sceneDiv = screen.querySelector("div[id^='sceneState']");
-        if (sceneDiv) sceneDiv.innerText = serverMessage;
+  const sceneDiv = screen.querySelector("div[id^='sceneState']");
+  if (sceneDiv) sceneDiv.innerText = serverMessage;
 
-        // Clear all input fields within this screen
-        const inputs = screen.querySelectorAll("input");
-        inputs.forEach(input => input.value = "");
-
-        // Re-enable all buttons within this screen
-        const buttons = screen.querySelectorAll("button");
-        buttons.forEach(btn => btn.disabled = false);
-    }
+  // NOTE: we do NOT auto-clear all inputs anymore, because some phases
+  // (like Vote) don’t use inputs and clearing can be annoying during debugging.
 }
 
-// -------------------------
-// connect
-//   Establishes a WebSocket connection to the server and sets up message handling.
-// -------------------------
 function connect() {
-    ws = new WebSocket("ws://127.0.0.1:8080"); // Change this to the server's IP address and port for remote play or (127.0.0.1 for local)
+  ws = new WebSocket("ws://127.0.0.1:8080");
 
-    // Called whenever a message arrives from the server
-    ws.onmessage = (event) => {
-        const state = JSON.parse(event.data); // Deserialize JSON
+  ws.onmessage = (event) => {
+    const state = JSON.parse(event.data);
+    const serverMessage = state.prompt || "";
 
-        // Build the message string
-        const serverMessage = /* state.scene + " — " + */ state.prompt;
+    // Start button only for first player in Lobby or Wait (optional).
+    const startBtn = document.getElementById("startBtn");
+    const showStart = (state.isFirst && (state.scene === "Lobby" || state.scene === "Wait"));
+    startBtn.style.display = showStart ? "inline" : "none";
 
-        // Show the start button only for the first player during Lobby
-        const startBtn = document.getElementById("startBtn");
-        startBtn.style.display =
-            (state.scene === "Lobby" && state.isFirst) ? "inline" : "none";
+    switch (state.scene) {
+      case "Lobby":
+        showScreen("screenLobby", serverMessage);
+        break;
 
-        // Show the appropriate screen based on the current scene
-        switch (state.scene) {
-            case "Lobby":
-                showScreen("screenLobby", serverMessage);
-                break;
-            case "Prompt":
-                showScreen("screenPrompt", serverMessage);
-                break;
-            case "Vote":
-                showScreen("screenVote", serverMessage);
-                buildVoteButtons(state.buttons); // dynamically create vote buttons
-                break;
-            case "Wait":
-                showScreen("screenWait", serverMessage);
-                break;
-        }
-    };
+      case "Prompt":
+        showScreen("screenPrompt", serverMessage);
+        document.getElementById("taglineTemplateText").innerText = state.taglineTemplate || "";
+        break;
+
+      case "Review":
+        showScreen("screenReview", serverMessage);
+        document.getElementById("assignedTaglineText").innerText = state.assignedTagline || "";
+        // Server may provide either assignedTone or a label field depending on your version:
+        document.getElementById("assignedToneText").innerText =
+          state.assignedTone || state.reviewRatingLabel || "";
+        break;
+
+      case "Vote":
+        showScreen("screenVote", serverMessage);
+
+        document.getElementById("voteIndex").innerText = (state.entryIndex + 1) || 1;
+        document.getElementById("voteCount").innerText = state.entryCount || 0;
+
+        document.getElementById("currentTaglineText").innerText = state.currentTagline || "";
+        document.getElementById("currentReviewText").innerText = state.currentReview || "";
+        document.getElementById("currentReviewToneText").innerText =
+          state.currentReviewTone || state.currentReviewRating || "";
+
+        // state.starButtons might be int[] or state.buttons might be string[]
+        buildStarButtons(state.starButtons || state.buttons || [1,2,3,4,5]);
+        break;
+
+      case "Results":
+        showScreen("screenResults", serverMessage);
+        document.getElementById("resultsText").innerText = state.resultsText || "";
+        break;
+
+      case "Wait":
+        showScreen("screenWait", serverMessage);
+        break;
+
+      default:
+        // fallback
+        showScreen("screenWait", "Unknown scene: " + state.scene);
+        break;
+    }
+  };
 }
 
-// -------------------------
-// send
-//   Serializes and sends a JSON message to the server.
-// -------------------------
 function send(obj) {
-    if (ws && ws.readyState === WebSocket.OPEN)
-        ws.send(JSON.stringify(obj));
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify(obj));
+  }
 }
 
-// -------------------------
-// Lobby event handlers
-// -------------------------
+// Lobby
 document.getElementById("joinBtn").onclick = () => {
-    send({ type: "join", name: nameInput.value }); // send name to server
-    joinBtn.disabled = true; // prevent multiple submissions
+  const name = document.getElementById("nameInput").value;
+  send({ type: "join", name });
+  document.getElementById("joinBtn").disabled = true;
 };
 
 document.getElementById("startBtn").onclick = () => {
-    send({ type: "start" }); // notify server to advance from Lobby
-    startBtn.disabled = true; // prevent multiple presses
+  send({ type: "start" });
+  document.getElementById("startBtn").disabled = true;
 };
 
-// -------------------------
-// Prompt event handler
-// -------------------------
-document.getElementById("sendBtn").onclick = () => {
-    send({ type: "input", text: textInput.value }); // send text to server
-    sendBtn.disabled = true; // disable after submission
+// Prompt submit (two blanks)
+document.getElementById("sendPromptBtn").onclick = () => {
+  const a = document.getElementById("blankAInput").value;
+  const b = document.getElementById("blankBInput").value;
+  send({ type: "input", a, b });
+  document.getElementById("sendPromptBtn").disabled = true;
 };
 
-// -------------------------
-// buildVoteButtons
-//   Dynamically creates vote buttons for the Vote phase.
-//   When one button is clicked, all buttons are disabled to prevent multiple votes.
-// -------------------------
-function buildVoteButtons(buttons) {
-    const container = document.getElementById("voteButtons");
-    container.innerHTML = ""; // clear existing buttons
+// Review submit
+document.getElementById("sendReviewBtn").onclick = () => {
+  const text = document.getElementById("reviewInput").value;
+  send({ type: "input", text });
+  document.getElementById("sendReviewBtn").disabled = true;
+};
 
-    if (!buttons) return; // no options to display
+// Vote buttons (always 1–5, no unicode)
+function buildStarButtons(starButtons) {
+  const container = document.getElementById("voteButtons");
+  container.innerHTML = "";
 
-    // Create a button for each vote option
-    buttons.forEach((label, idx) => {
-        const btn = document.createElement("button");
-        btn.innerText = label;
-
-        btn.onclick = () => {
-            send({ type: "choice", index: idx }); // send selected index to server
-
-            // Disable all buttons to prevent multiple votes
-            container.querySelectorAll("button").forEach(b => b.disabled = true);
-        };
-
-        container.appendChild(btn);
-    });
+  starButtons.forEach((labelOrNumber, idx) => {
+    const btn = document.createElement("button");
+    btn.innerText = String(labelOrNumber); // "1".."5" (or whatever)
+    btn.onclick = () => {
+      send({ type: "choice", index: idx }); // server interprets idx -> stars
+      container.querySelectorAll("button").forEach(b => b.disabled = true);
+    };
+    container.appendChild(btn);
+  });
 }
 
-// -------------------------
-// Initialize connection when the page loads
-// -------------------------
 window.onload = connect;
-
 </script>
 
 </body>

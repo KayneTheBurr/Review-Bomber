@@ -495,7 +495,7 @@ PrefabInstance:
       objectReference: {fileID: 1565302033}
     - target: {fileID: 9092478197959348390, guid: d4b6cbdd68908be4f9122cad6ac774b7, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: AdvanceState
+      value: DebugAdvance
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
