@@ -49,7 +49,12 @@ public class StageManagerServer : MonoBehaviour
     private bool themeTimerRunning = false;
     public float themeDurationSeconds = 10f;
 
+    [Header("Connected Clients")]
+    [SerializeField]
+    private List<ConnectedClientDebug> connectedClients = new();
+
     [SerializeField] private bool updateUnityHostUI = true;
+    private Fleck.WebSocketServer _server;
     // Keep your variable name "prompt" (this is the tagline template)
     // Tip: prefer using {A} and {B} tokens, e.g. "Don't let your {A} ever cause {B} again!"
     public string prompt = "Dont let your {A} ever cause {B} again!";
@@ -60,7 +65,7 @@ public class StageManagerServer : MonoBehaviour
     // ------------------------
     // Game state tracking
     // ------------------------
-    public enum SceneState { Lobby, Theme, Prompt, Review, Vote, Results}
+    public enum SceneState { Lobby, Theme, Prompt, Review, Vote, Results }
 
     // You asked about making this an enum: YES, it works fine.
     // JsonUtility will serialize it as an int (0,1,2...).
@@ -105,6 +110,34 @@ public class StageManagerServer : MonoBehaviour
         }
 
         Debug.Log($"[Server] Selected Theme: {currentThemePrompt.theme}");
+    }
+
+    //Used for currently list of connections
+    [System.Serializable]
+    public class ConnectedClientDebug
+    {
+        public string id;
+        public string ip;
+        public bool isFirst;
+    }
+
+    private void RefreshConnectedClientsDebug()
+    {
+        // Unity Inspector-friendly mirror of current connections (for debugging only)
+        connectedClients.Clear();
+
+        foreach (var kv in players)
+        {
+            var socket = kv.Key;
+            var player = kv.Value;
+
+            connectedClients.Add(new ConnectedClientDebug
+            {
+                id = socket.ConnectionInfo?.Id.ToString() ?? "unknown",
+                ip = socket.ConnectionInfo?.ClientIpAddress ?? "unknown",
+                isFirst = player.isFirst
+            });
+        }
     }
 
     // ------------------------
@@ -157,6 +190,8 @@ public class StageManagerServer : MonoBehaviour
     private Dictionary<IWebSocketConnection, Player> players = new Dictionary<IWebSocketConnection, Player>();
     private bool firstAssigned = false;
     private WebSocketServer server;
+    private bool serverRunning = false;
+    private bool serverStopping = false;
 
     // Round state
     private List<IWebSocketConnection> orderedConnections = new List<IWebSocketConnection>();
@@ -167,7 +202,7 @@ public class StageManagerServer : MonoBehaviour
     private int responsesReceived = 0;
 
 
-    
+
 
 
     // ------------------------
@@ -177,6 +212,8 @@ public class StageManagerServer : MonoBehaviour
     {
         string url = $"ws://{listenAddress}:{port}";
         server = new WebSocketServer(url);
+        _server = server;
+        serverRunning = true;
 
         server.Start(socket =>
         {
@@ -196,6 +233,8 @@ public class StageManagerServer : MonoBehaviour
                     players[socket] = p;
                     RebuildOrderedConnections();
 
+                    RefreshConnectedClientsDebug();
+
                     SendStateTo(socket);
                     UpdateHostUI();
                 });
@@ -209,6 +248,8 @@ public class StageManagerServer : MonoBehaviour
 
                     players.Remove(socket);
                     RebuildOrderedConnections();
+
+                    RefreshConnectedClientsDebug();
 
                     if (wasFirst)
                     {
@@ -263,6 +304,73 @@ public class StageManagerServer : MonoBehaviour
         });
 
         Debug.Log($"[Server] StageManagerServer started on {url}");
+
+    }
+
+    private void OnDisable()
+    {
+        StopServer();
+    }
+
+    private void OnDestroy()
+    {
+        StopServer();
+    }
+
+    private void OnApplicationQuit()
+    {
+        StopServer();
+    }
+
+    private void StopServer()
+    {
+        if (!serverRunning) return;
+        if (serverStopping) return;
+        serverStopping = true;
+        serverRunning = false;
+
+        Debug.Log("[Server] Stopping Fleck server...");
+
+        try
+        {
+            // Close all client connections we know about
+            foreach (var conn in players.Keys.ToList())
+            {
+                try { conn.Close(); } catch { }
+            }
+
+            players.Clear();
+            orderedConnections.Clear();
+            firstAssigned = false;
+            entries?.Clear();
+            connectedClients.Clear();
+
+            // Stop the websocket server listener
+            if (_server != null)
+            {
+                try { _server.Dispose(); } catch { }
+                _server = null;
+            }
+            if (server != null)
+            {
+                try { server.Dispose(); } catch { }
+                server = null;
+            }
+
+            // Clear any pending main-thread work
+            lock (_mtLock)
+            {
+                _mainThread.Clear();
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning($"[Server] Error during shutdown: {e}");
+        }
+        finally
+        {
+            serverStopping = false;
+        }
     }
 
     private void Update()
@@ -508,7 +616,7 @@ public class StageManagerServer : MonoBehaviour
         }
     }
 
-    
+
 
     // ------------------------
     // State transitions
@@ -562,7 +670,7 @@ public class StageManagerServer : MonoBehaviour
                 themeTimerRequested = true;
                 break;
 
-            
+
         }
         SendStateToAll();
         Debug.Log("[Server] Advanced to " + currentState);
@@ -885,6 +993,7 @@ public class StageManagerServer : MonoBehaviour
             return a.GetHashCode().CompareTo(b.GetHashCode());
         });
     }
+
 
     // ------------------------
     // DTOs

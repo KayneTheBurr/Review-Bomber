@@ -10,11 +10,31 @@ button { margin: 5px; }
 textarea { width: 100%; height: 140px; }
 .small { font-size: 0.9em; opacity: 0.85; }
 .box { border: 1px solid #ccc; padding: 10px; margin: 10px 0; }
+
+/* Connection status indicator */
+.statusBar { display: flex; align-items: center; gap: 10px; margin: 10px 0 18px; padding: 8px 10px; border: 1px solid #ccc; border-radius: 8px; }
+.dot { width: 10px; height: 10px; border-radius: 999px; background: #999; display: inline-block; }
+.dot.ok { background: #2aa745; }
+.dot.bad { background: #d64545; }
+.dot.warn { background: #d0a400; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+.grow { flex: 1; }
+.smallBtn { padding: 6px 10px; font-size: 0.9em; }
 </style>
 </head>
 <body>
 
     <h1>Review Bomber (Client)</h1>
+
+    <!-- Connection Status -->
+    <div class="statusBar">
+        <span id="connDot" class="dot warn" title="WebSocket status"></span>
+        <div class="grow">
+            <div><b>Server:</b> <span id="connLabel">Not connected</span></div>
+            <div class="small mono" id="connDetail">ws://127.0.0.1:8080</div>
+        </div>
+        <button id="reconnectBtn" class="smallBtn">Reconnect</button>
+    </div>
 
     <!-- LOBBY -->
     <div id="screenLobby" class="screen">
@@ -153,6 +173,34 @@ textarea { width: 100%; height: 140px; }
 
     <script>
         let ws;
+        // Update this if your server runs elsewhere (or set window.WS_URL before loading this page)
+        const WS_URL = window.WS_URL || "ws://127.0.0.1:8080";
+
+        // Connection status UI
+        let lastServerMessageAt = null;
+        function setConnStatus(state, label, detail) {
+            const dot = document.getElementById("connDot");
+            const lab = document.getElementById("connLabel");
+            const det = document.getElementById("connDetail");
+
+            if (dot) {
+                dot.classList.remove("ok", "bad", "warn");
+                dot.classList.add(state);
+            }
+            if (lab) lab.textContent = label;
+            if (det) det.textContent = detail;
+        }
+
+        function formatAgo(d) {
+            if (!d) return "no server messages yet";
+            const ms = Date.now() - d.getTime();
+            const s = Math.floor(ms / 1000);
+            if (s < 2) return "just now";
+            if (s < 60) return `${s}s ago`;
+            const m = Math.floor(s / 60);
+            const r = s % 60;
+            return `${m}m ${r}s ago`;
+        }
         // susan start: tutorial logic (only once, triggered on first Prompt screen)
         const SUSAN_TUTORIAL_KEY = "reviewbomber_tutorial_seen_v1";
 
@@ -202,9 +250,30 @@ textarea { width: 100%; height: 140px; }
         }
 
         function connect() {
-            ws = new WebSocket("ws://127.0.0.1:8080");
+            try { ws?.close(); } catch (_) {}
+            lastServerMessageAt = null;
+            setConnStatus("warn", "Connecting…", WS_URL);
+
+            ws = new WebSocket(WS_URL);
+
+            ws.onopen = () => {
+                setConnStatus("ok", "Connected", `${WS_URL} • ${formatAgo(lastServerMessageAt)}`);
+                // Show lobby immediately so it doesn't look "dead" before first state packet arrives
+                showScreen("screenLobby", "Connected. Waiting for server state…");
+            };
+
+            ws.onerror = (e) => {
+                console.error("WebSocket error", e);
+                setConnStatus("bad", "Error", `${WS_URL} • check server / port / firewall`);
+            };
+
+            ws.onclose = () => {
+                setConnStatus("bad", "Disconnected", `${WS_URL} • ${formatAgo(lastServerMessageAt)}`);
+            };
 
             ws.onmessage = (event) => {
+                lastServerMessageAt = new Date();
+                setConnStatus("ok", "Connected", `${WS_URL} • last msg ${formatAgo(lastServerMessageAt)}`);
                 const state = JSON.parse(event.data);
                 const serverMessage = state.prompt || "";
 
@@ -316,6 +385,25 @@ textarea { width: 100%; height: 140px; }
         }
 
         window.onload = connect;
+
+        // Reconnect button
+        document.getElementById("reconnectBtn").onclick = () => {
+            connect();
+        };
+
+        // Keep the detail line fresh even if server stops sending messages
+        setInterval(() => {
+            // Only update when we are currently connected (or connecting)
+            if (!document.getElementById("connDetail")) return;
+            const dot = document.getElementById("connDot");
+            const isOk = dot && dot.classList.contains("ok");
+            const isWarn = dot && dot.classList.contains("warn");
+            if (isOk) {
+                document.getElementById("connDetail").textContent = `${WS_URL} • last msg ${formatAgo(lastServerMessageAt)}`;
+            } else if (isWarn) {
+                document.getElementById("connDetail").textContent = `${WS_URL} • ${formatAgo(lastServerMessageAt)}`;
+            }
+        }, 1000);
     </script>
 
 </body>
