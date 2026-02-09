@@ -60,10 +60,11 @@ public class StageManagerServer : MonoBehaviour
     public string prompt = "Dont let your {A} ever cause {B} again!";
 
     [Header("Sound Effects")] //SFX related codes will be started from line 570, under UpdateUI Logics
-    public AudioSource countDownSource; //AudioSource for playing countdown SFX during the Theme phase.    
+    public AudioSource countDownSource; //AudioSource for playing countdown SFX in between phases    
     public AudioSource sfxSource; //AudioSource for playing SFX on the host machine (e.g. player join).
     public List<AudioClip> playerJoinSFXList; //List of SFX for whenver player is joining the lobby. One will be randomly selected from this list.
     public AudioClip stateChangeSFX; //SFX for whenever the game state changes (e.g. Lobby -> Theme, Prompt -> Review, etc).
+    public AudioClip resultStateSFX; //SFX for when the game enters the Results state.
     public AudioClip countDownSFX; //SFX for the countdown during the phases
     
 
@@ -80,8 +81,27 @@ public class StageManagerServer : MonoBehaviour
     // JsonUtility will serialize it as an int (0,1,2...).
     public enum ReviewRating { Good = 0, Average = 1, Bad = 2 }
 
-    public SceneState currentState = SceneState.Lobby;
+    private SceneState _currentState = SceneState.Lobby; // for detecting state changes in Update()
+    public SceneState currentState
+    {
+        get { return _currentState; }
+        set
+        {
+            if(_currentState != value)
+            {
+                _currentState = value;
+                if(value == SceneState.Results)
+                {
+                    PlayResultsStateSFX();
+                }
+                else
+                {
+                    PlayStateChangeSFX();
+                }
+            }
+        }
 
+    } 
     //debugging trying to fix randomizer giving an error bc of fleck things
     private readonly System.Random _rng = new System.Random();
 
@@ -404,8 +424,9 @@ public class StageManagerServer : MonoBehaviour
     }
     IEnumerator ThemeCountdown()
     {
-        PlayCountDownSFX();
-        yield return new WaitForSeconds(themeDurationSeconds);
+        yield return new WaitForSeconds(themeDurationSeconds - 5f);
+        PlayCountDownSFX(5f);
+        yield return new WaitForSeconds(5f);
 
         if (currentState == SceneState.Theme)
         {
@@ -588,11 +609,32 @@ public class StageManagerServer : MonoBehaviour
             }
     }
 
-    void PlayCountDownSFX()
+    void PlayCountDownSFX(float duration)
     {
-        if(sfxSource != null && countDownSFX != null)
+        duration = 5f;
+
+        if(countDownSource != null && countDownSFX != null)
         {
-            sfxSource.PlayOneShot(countDownSFX);
+            countDownSource.clip = countDownSFX;
+            countDownSource.Play();
+            StartCoroutine(StopCountDownAfter(duration));
+        }
+    }
+
+    void PlayResultsStateSFX()
+    {
+        if (sfxSource != null && resultStateSFX != null)
+        {
+            sfxSource.PlayOneShot(resultStateSFX);
+        }
+    }
+
+    IEnumerator StopCountDownAfter(float seconds)
+    {
+        yield return new WaitForSeconds(seconds);
+        if(countDownSource != null)
+        {
+            countDownSource.Stop();
         }
     }
 
