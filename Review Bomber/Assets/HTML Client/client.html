@@ -14,218 +14,309 @@ textarea { width: 100%; height: 140px; }
 </head>
 <body>
 
-<h1>Review Bomber (Client)</h1>
+    <h1>Review Bomber (Client)</h1>
 
-<!-- LOBBY -->
-<div id="screenLobby" class="screen">
-  <div id="sceneStateLobby" style="margin-bottom:15px;"></div>
-  <label>Your Name:</label>
-  <input type="text" id="nameInput">
-  <button id="joinBtn">Join</button>
-  <button id="startBtn" style="display:none;">Start Game</button>
-</div>
+    <!-- LOBBY -->
+    <div id="screenLobby" class="screen">
+        <div id="sceneStateLobby" style="margin-bottom:15px;"></div>
+        <label>Your Name:</label>
+        <input type="text" id="nameInput">
+        <button id="joinBtn">Join</button>
+        <button id="startBtn" style="display:none;">Start Game</button>
+    </div>
 
-<!-- PROMPT (TAGLINE BLANKS) -->
-<div id="screenPrompt" class="screen">
-  <div id="sceneStatePrompt" style="margin-bottom:15px;"></div>
+    <!-- PROMPT (TAGLINE BLANKS) -->
+    <div id="screenPrompt" class="screen">
+        <div id="sceneStatePrompt" style="margin-bottom:15px;"></div>
 
-  <div class="box">
-    <div class="small">Tagline Template:</div>
-    <div id="taglineTemplateText"></div>
-  </div>
+        <div class="box">
+            <div class="small">Tagline Template:</div>
+            <div id="taglineTemplateText"></div>
+        </div>
 
-  <label>Blank A:</label>
-  <input type="text" id="blankAInput">
-  <br><br>
-  <label>Blank B:</label>
-  <input type="text" id="blankBInput">
-  <br><br>
+        <label>Blank A:</label>
+        <input type="text" id="blankAInput">
+        <br><br>
+        <label>Blank B:</label>
+        <input type="text" id="blankBInput">
+        <br><br>
 
-  <button id="sendPromptBtn">Submit Tagline</button>
-</div>
+        <button id="sendPromptBtn">Submit Tagline</button>
+    </div>
 
-<!-- REVIEW -->
-<div id="screenReview" class="screen">
-  <div id="sceneStateReview" style="margin-bottom:15px;"></div>
+    <!-- REVIEW -->
+    <div id="screenReview" class="screen">
+        <div id="sceneStateReview" style="margin-bottom:15px;"></div>
 
-  <div class="box">
-    <div class="small">You are reviewing this tagline:</div>
-    <div id="assignedTaglineText"></div>
-  </div>
+        <div class="box">
+            <div class="small">You are reviewing this tagline:</div>
+            <div id="assignedTaglineText"></div>
+        </div>
 
-  <div class="box">
-    <div class="small">Your required review tone:</div>
-    <div id="assignedToneText"></div>
-  </div>
+        <div class="box">
+            <div class="small">Your required review tone:</div>
+            <div id="assignedToneText"></div>
+        </div>
 
-  <label>Your Review:</label>
-  <textarea id="reviewInput"></textarea>
-  <br>
-  <button id="sendReviewBtn">Submit Review</button>
-</div>
+        <label>Your Review:</label>
+        <textarea id="reviewInput"></textarea>
+        <br>
+        <button id="sendReviewBtn">Submit Review</button>
+    </div>
 
-<!-- VOTE (1–5 STARS) -->
-<div id="screenVote" class="screen">
-  <div id="sceneStateVote" style="margin-bottom:15px;"></div>
+    <!-- VOTE (1–5 STARS) -->
+    <div id="screenVote" class="screen">
+        <div id="sceneStateVote" style="margin-bottom:15px;"></div>
 
-  <div class="box">
-    <div class="small">Now rating entry <span id="voteIndex"></span> / <span id="voteCount"></span></div>
-    <div class="small">Tagline:</div>
-    <div id="currentTaglineText"></div>
-    <hr>
-    <div class="small">Review (<span id="currentReviewToneText"></span>):</div>
-    <div id="currentReviewText"></div>
-  </div>
+        <div class="box">
+            <div class="small">Now rating entry <span id="voteIndex"></span> / <span id="voteCount"></span></div>
+            <div class="small">Tagline:</div>
+            <div id="currentTaglineText"></div>
+            <hr>
+            <div class="small">Review (<span id="currentReviewToneText"></span>):</div>
+            <div id="currentReviewText"></div>
+        </div>
 
-  <div id="voteButtons"></div>
-</div>
+        <div id="voteButtons"></div>
+    </div>
 
-<!-- RESULTS -->
-<div id="screenResults" class="screen">
-  <div id="sceneStateResults" style="margin-bottom:15px;"></div>
-  <div class="box">
-    <div class="small">Top Results:</div>
-    <pre id="resultsText" style="white-space:pre-wrap;"></pre>
-  </div>
-  <div class="small">Waiting for host to start next round…</div>
-</div>
+    <!-- RESULTS -->
+    <div id="screenResults" class="screen">
+        <div id="sceneStateResults" style="margin-bottom:15px;"></div>
+        <div class="box">
+            <div class="small">Top Results:</div>
+            <pre id="resultsText" style="white-space:pre-wrap;"></pre>
+        </div>
+        <div class="small">Waiting for host to start next round…</div>
+    </div>
 
-<!-- WAIT -->
-<div id="screenWait" class="screen">
-  <div id="sceneStateWait" style="margin-bottom:15px;"></div>
-  <span>Waiting... (host can start next round)</span>
-</div>
+    <!-- WAIT -->
+    <div id="screenWait" class="screen">
+        <div id="sceneStateWait" style="margin-bottom:15px;"></div>
+        <span>Waiting... (host can start next round)</span>
+    </div>
 
-<script>
-let ws;
 
-function showScreen(screenId, serverMessage) {
-  document.querySelectorAll(".screen").forEach(s => s.style.display = "none");
-  const screen = document.getElementById(screenId);
-  if (!screen) return;
+    <!-- susan start: tutorial overlay (shows only once on first Prompt screen) -->
+    <div id="tutorialOverlay" style="
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  font-family: sans-serif;
+">
+        <div style="
+    width: min(560px, 92vw);
+    background: #111;
+    color: #fff;
+    border-radius: 12px;
+    padding: 18px 18px 14px 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  ">
+            <div style="font-size: 20px; font-weight: 700; margin-bottom: 10px;">
+                Quick Tutorial
+            </div>
 
-  screen.style.display = "block";
+            <div style="line-height: 1.45; font-size: 14px;">
+                <ol style="margin: 0 0 10px 18px; padding: 0;">
+                    <li><b>Fill Blank A and Blank B</b> to complete the tagline.</li>
+                    <li>Next, you’ll be assigned someone else’s tagline.</li>
+                    <li><b>Write a review</b> in the required tone.</li>
+                    <li><b>Rate entries</b> 1–5. Highest score wins.</li>
+                </ol>
+            </div>
 
-  const sceneDiv = screen.querySelector("div[id^='sceneState']");
-  if (sceneDiv) sceneDiv.innerText = serverMessage;
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:14px;">
+                <button id="tutorialResetBtn" style="
+        background: transparent; color: #aaa;
+        border: 1px solid #444; border-radius: 10px;
+        padding: 8px 12px; cursor: pointer;
+      ">
+                    Show again next time
+                </button>
 
-  // NOTE: we do NOT auto-clear all inputs anymore, because some phases
-  // (like Vote) don’t use inputs and clearing can be annoying during debugging.
-}
+                <button id="tutorialGotItBtn" style="
+        background: #fff; color: #111;
+        border: none; border-radius: 10px;
+        padding: 8px 14px; cursor: pointer;
+        font-weight: 700;
+      ">
+                    Got it
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- susan end: tutorial overlay -->
 
-function connect() {
-  ws = new WebSocket("ws://127.0.0.1:8080");
 
-  ws.onmessage = (event) => {
-    const state = JSON.parse(event.data);
-    const serverMessage = state.prompt || "";
+    <script>
+        let ws;
+        // susan start: tutorial logic (only once, triggered on first Prompt screen)
+        const SUSAN_TUTORIAL_KEY = "reviewbomber_tutorial_seen_v1";
 
-    // Start button only for first player in Lobby or Wait (optional).
-    const startBtn = document.getElementById("startBtn");
-    const showStart = (state.isFirst && (state.scene === "Lobby" || state.scene === "Wait"));
-    startBtn.style.display = showStart ? "inline" : "none";
+        function susanShowTutorialOverlay() {
+            const overlay = document.getElementById("tutorialOverlay");
+            if (!overlay) return;
 
-    switch (state.scene) {
-      case "Lobby":
-        showScreen("screenLobby", serverMessage);
-        break;
+            overlay.style.display = "flex";
 
-      case "Prompt":
-        showScreen("screenPrompt", serverMessage);
-        document.getElementById("taglineTemplateText").innerText = state.taglineTemplate || "";
-        break;
+            const gotItBtn = document.getElementById("tutorialGotItBtn");
+            const resetBtn = document.getElementById("tutorialResetBtn");
 
-      case "Review":
-        showScreen("screenReview", serverMessage);
-        document.getElementById("assignedTaglineText").innerText = state.assignedTagline || "";
-        // Server may provide either assignedTone or a label field depending on your version:
-        document.getElementById("assignedToneText").innerText =
-          state.assignedTone || state.reviewRatingLabel || "";
-        break;
+            if (gotItBtn) {
+                gotItBtn.onclick = () => {
+                    sessionStorage.setItem(SUSAN_TUTORIAL_KEY, "1");
+                    overlay.style.display = "none";
+                };
+            }
 
-      case "Vote":
-        showScreen("screenVote", serverMessage);
+            // for debugging/testing: makes it show again next time you hit Prompt
+            if (resetBtn) {
+                resetBtn.onclick = () => {
+                    sessionStorage.removeItem(SUSAN_TUTORIAL_KEY);
+                    overlay.style.display = "none";
+                };
+            }
+        }
 
-        document.getElementById("voteIndex").innerText = (state.entryIndex + 1) || 1;
-        document.getElementById("voteCount").innerText = state.entryCount || 0;
+        function susanMaybeShowTutorialOnPrompt() {
+            const seen = sessionStorage.getItem(SUSAN_TUTORIAL_KEY);
+            if (!seen) susanShowTutorialOverlay();
+        }
+        // susan end: tutorial logic
 
-        document.getElementById("currentTaglineText").innerText = state.currentTagline || "";
-        document.getElementById("currentReviewText").innerText = state.currentReview || "";
-        document.getElementById("currentReviewToneText").innerText =
-          state.currentReviewTone || state.currentReviewRating || "";
+        function showScreen(screenId, serverMessage) {
+            document.querySelectorAll(".screen").forEach(s => s.style.display = "none");
+            const screen = document.getElementById(screenId);
+            if (!screen) return;
 
-        // state.starButtons might be int[] or state.buttons might be string[]
-        buildStarButtons(state.starButtons || state.buttons || [1,2,3,4,5]);
-        break;
+            screen.style.display = "block";
 
-      case "Results":
-        showScreen("screenResults", serverMessage);
-        document.getElementById("resultsText").innerText = state.resultsText || "";
-        break;
+            const sceneDiv = screen.querySelector("div[id^='sceneState']");
+            if (sceneDiv) sceneDiv.innerText = serverMessage;
 
-      case "Theme":
-        showScreen("screenWait", serverMessage); // reuse same screen
-        break;
+            // NOTE: we do NOT auto-clear all inputs anymore, because some phases
+            // (like Vote) don’t use inputs and clearing can be annoying during debugging.
+        }
 
-      default:
-        // fallback
-        showScreen("screenWait", "Unknown scene: " + state.scene);
-        break;
-    }
-  };
-}
+        function connect() {
+            ws = new WebSocket("ws://127.0.0.1:8080");
 
-function send(obj) {
-  if (ws && ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify(obj));
-  }
-}
+            ws.onmessage = (event) => {
+                const state = JSON.parse(event.data);
+                const serverMessage = state.prompt || "";
 
-// Lobby
-document.getElementById("joinBtn").onclick = () => {
-  const name = document.getElementById("nameInput").value;
-  send({ type: "join", name });
-  document.getElementById("joinBtn").disabled = true;
-};
+                // Start button only for first player in Lobby or Wait (optional).
+                const startBtn = document.getElementById("startBtn");
+                const showStart = (state.isFirst && (state.scene === "Lobby" || state.scene === "Wait"));
+                startBtn.style.display = showStart ? "inline" : "none";
 
-document.getElementById("startBtn").onclick = () => {
-  send({ type: "start" });
-  document.getElementById("startBtn").disabled = true;
-};
+                switch (state.scene) {
+                    case "Lobby":
+                        showScreen("screenLobby", serverMessage);
+                        break;
 
-// Prompt submit (two blanks)
-document.getElementById("sendPromptBtn").onclick = () => {
-  const a = document.getElementById("blankAInput").value;
-  const b = document.getElementById("blankBInput").value;
-  send({ type: "input", a, b });
-  document.getElementById("sendPromptBtn").disabled = true;
-};
+                    case "Prompt":
+                        showScreen("screenPrompt", serverMessage);
+                        document.getElementById("taglineTemplateText").innerText = state.taglineTemplate || "";
+                        // susan start: show tutorial once on first time entering Prompt
+                        susanMaybeShowTutorialOnPrompt();
+                        // susan end: show tutorial once
+                        break;
 
-// Review submit
-document.getElementById("sendReviewBtn").onclick = () => {
-  const text = document.getElementById("reviewInput").value;
-  send({ type: "input", text });
-  document.getElementById("sendReviewBtn").disabled = true;
-};
+                    case "Review":
+                        showScreen("screenReview", serverMessage);
+                        document.getElementById("assignedTaglineText").innerText = state.assignedTagline || "";
+                        // Server may provide either assignedTone or a label field depending on your version:
+                        document.getElementById("assignedToneText").innerText =
+                            state.assignedTone || state.reviewRatingLabel || "";
+                        break;
 
-// Vote buttons (always 1–5, no unicode)
-function buildStarButtons(starButtons) {
-  const container = document.getElementById("voteButtons");
-  container.innerHTML = "";
+                    case "Vote":
+                        showScreen("screenVote", serverMessage);
 
-  starButtons.forEach((labelOrNumber, idx) => {
-    const btn = document.createElement("button");
-    btn.innerText = String(labelOrNumber); // "1".."5" (or whatever)
-    btn.onclick = () => {
-      send({ type: "choice", index: idx }); // server interprets idx -> stars
-      container.querySelectorAll("button").forEach(b => b.disabled = true);
-    };
-    container.appendChild(btn);
-  });
-}
+                        document.getElementById("voteIndex").innerText = (state.entryIndex + 1) || 1;
+                        document.getElementById("voteCount").innerText = state.entryCount || 0;
 
-window.onload = connect;
-</script>
+                        document.getElementById("currentTaglineText").innerText = state.currentTagline || "";
+                        document.getElementById("currentReviewText").innerText = state.currentReview || "";
+                        document.getElementById("currentReviewToneText").innerText =
+                            state.currentReviewTone || state.currentReviewRating || "";
+
+                        // state.starButtons might be int[] or state.buttons might be string[]
+                        buildStarButtons(state.starButtons || state.buttons || [1, 2, 3, 4, 5]);
+                        break;
+
+                    case "Results":
+                        showScreen("screenResults", serverMessage);
+                        document.getElementById("resultsText").innerText = state.resultsText || "";
+                        break;
+
+                    case "Theme":
+                        showScreen("screenWait", serverMessage); // reuse same screen
+                        break;
+
+                    default:
+                        // fallback
+                        showScreen("screenWait", "Unknown scene: " + state.scene);
+                        break;
+                }
+            };
+        }
+
+        function send(obj) {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify(obj));
+            }
+        }
+
+        // Lobby
+        document.getElementById("joinBtn").onclick = () => {
+            const name = document.getElementById("nameInput").value;
+            send({ type: "join", name });
+            document.getElementById("joinBtn").disabled = true;
+        };
+
+        document.getElementById("startBtn").onclick = () => {
+            send({ type: "start" });
+            document.getElementById("startBtn").disabled = true;
+        };
+
+        // Prompt submit (two blanks)
+        document.getElementById("sendPromptBtn").onclick = () => {
+            const a = document.getElementById("blankAInput").value;
+            const b = document.getElementById("blankBInput").value;
+            send({ type: "input", a, b });
+            document.getElementById("sendPromptBtn").disabled = true;
+        };
+
+        // Review submit
+        document.getElementById("sendReviewBtn").onclick = () => {
+            const text = document.getElementById("reviewInput").value;
+            send({ type: "input", text });
+            document.getElementById("sendReviewBtn").disabled = true;
+        };
+
+        // Vote buttons (always 1–5, no unicode)
+        function buildStarButtons(starButtons) {
+            const container = document.getElementById("voteButtons");
+            container.innerHTML = "";
+
+            starButtons.forEach((labelOrNumber, idx) => {
+                const btn = document.createElement("button");
+                btn.innerText = String(labelOrNumber); // "1".."5" (or whatever)
+                btn.onclick = () => {
+                    send({ type: "choice", index: idx }); // server interprets idx -> stars
+                    container.querySelectorAll("button").forEach(b => b.disabled = true);
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        window.onload = connect;
+    </script>
 
 </body>
 </html>
