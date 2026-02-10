@@ -12,399 +12,256 @@ textarea { width: 100%; height: 140px; }
 .box { border: 1px solid #ccc; padding: 10px; margin: 10px 0; }
 
 /* Connection status indicator */
-.statusBar { display: flex; align-items: center; gap: 10px; margin: 10px 0 18px; padding: 8px 10px; border: 1px solid #ccc; border-radius: 8px; }
+.statusBar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0 18px;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    flex-wrap: wrap;
+}
 .dot { width: 10px; height: 10px; border-radius: 999px; background: #999; display: inline-block; }
 .dot.ok { background: #2aa745; }
 .dot.bad { background: #d64545; }
 .dot.warn { background: #d0a400; }
-.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
 .grow { flex: 1; }
 .smallBtn { padding: 6px 10px; font-size: 0.9em; }
+
+input.serverInput {
+    width: 140px;
+    padding: 4px;
+}
 </style>
 </head>
 <body>
 
-    <h1>Review Bomber (Client)</h1>
+<h1>Review Bomber (Client)</h1>
 
-    <!-- Connection Status -->
-    <div class="statusBar">
-        <span id="connDot" class="dot warn" title="WebSocket status"></span>
-        <div class="grow">
-            <div><b>Server:</b> <span id="connLabel">Not connected</span></div>
-            <div class="small mono" id="connDetail">ws://127.0.0.1:8080</div>
-        </div>
-        <button id="reconnectBtn" class="smallBtn">Reconnect</button>
+<!-- Connection Status -->
+<div class="statusBar">
+    <span id="connDot" class="dot warn"></span>
+
+    <div>
+        <label class="small">Server IP</label><br>
+        <input id="serverIpInput" class="serverInput" placeholder="127.0.0.1">
     </div>
 
-    <!-- LOBBY -->
-    <div id="screenLobby" class="screen">
-        <div id="sceneStateLobby" style="margin-bottom:15px;"></div>
-        <label>Your Name:</label>
-        <input type="text" id="nameInput">
-        <button id="joinBtn">Join</button>
-        <button id="startBtn" style="display:none;">Start Game</button>
+    <div>
+        <label class="small">Port</label><br>
+        <input id="serverPortInput" class="serverInput" placeholder="8080">
     </div>
 
-    <!-- PROMPT (TAGLINE BLANKS) -->
-    <div id="screenPrompt" class="screen">
-        <div id="sceneStatePrompt" style="margin-bottom:15px;"></div>
-
-        <div class="box">
-            <div class="small">Tagline Template:</div>
-            <div id="taglineTemplateText"></div>
-        </div>
-
-        <label>Blank A:</label>
-        <input type="text" id="blankAInput">
-        <br><br>
-        <label>Blank B:</label>
-        <input type="text" id="blankBInput">
-        <br><br>
-
-        <button id="sendPromptBtn">Submit Tagline</button>
+    <div class="grow">
+        <div><b>Status:</b> <span id="connLabel">Not connected</span></div>
+        <div class="small mono" id="connDetail"></div>
     </div>
 
-    <!-- REVIEW -->
-    <div id="screenReview" class="screen">
-        <div id="sceneStateReview" style="margin-bottom:15px;"></div>
+    <button id="reconnectBtn" class="smallBtn">Connect</button>
+</div>
 
-        <div class="box">
-            <div class="small">You are reviewing this tagline:</div>
-            <div id="assignedTaglineText"></div>
-        </div>
+<!-- LOBBY -->
+<div id="screenLobby" class="screen">
+    <div id="sceneStateLobby" style="margin-bottom:15px;"></div>
+    <label>Your Name:</label>
+    <input type="text" id="nameInput">
+    <button id="joinBtn">Join</button>
+    <button id="startBtn" style="display:none;">Start Game</button>
+</div>
 
-        <div class="box">
-            <div class="small">Your required review tone:</div>
-            <div id="assignedToneText"></div>
-        </div>
+<!-- PROMPT -->
+<div id="screenPrompt" class="screen">
+    <div id="sceneStatePrompt" style="margin-bottom:15px;"></div>
 
-        <label>Your Review:</label>
-        <textarea id="reviewInput"></textarea>
-        <br>
-        <button id="sendReviewBtn">Submit Review</button>
+    <div class="box">
+        <div class="small">Tagline Template:</div>
+        <div id="taglineTemplateText"></div>
     </div>
 
-    <!-- VOTE (1–5 STARS) -->
-    <div id="screenVote" class="screen">
-        <div id="sceneStateVote" style="margin-bottom:15px;"></div>
+    <label>Blank A:</label>
+    <input type="text" id="blankAInput"><br><br>
 
-        <div class="box">
-            <div class="small">Now rating entry <span id="voteIndex"></span> / <span id="voteCount"></span></div>
-            <div class="small">Tagline:</div>
-            <div id="currentTaglineText"></div>
-            <hr>
-            <div class="small">Review (<span id="currentReviewToneText"></span>):</div>
-            <div id="currentReviewText"></div>
-        </div>
+    <label>Blank B:</label>
+    <input type="text" id="blankBInput"><br><br>
 
-        <div id="voteButtons"></div>
+    <button id="sendPromptBtn">Submit Tagline</button>
+</div>
+
+<!-- REVIEW -->
+<div id="screenReview" class="screen">
+    <div id="sceneStateReview" style="margin-bottom:15px;"></div>
+
+    <div class="box">
+        <div class="small">You are reviewing this tagline:</div>
+        <div id="assignedTaglineText"></div>
     </div>
 
-    <!-- RESULTS -->
-    <div id="screenResults" class="screen">
-        <div id="sceneStateResults" style="margin-bottom:15px;"></div>
-        <div class="box">
-            <div class="small">Top Results:</div>
-            <pre id="resultsText" style="white-space:pre-wrap;"></pre>
-        </div>
-        <div class="small">Waiting for host to start next round…</div>
+    <div class="box">
+        <div class="small">Your required review tone:</div>
+        <div id="assignedToneText"></div>
     </div>
 
-    <!-- WAIT -->
-    <div id="screenWait" class="screen">
-        <div id="sceneStateWait" style="margin-bottom:15px;"></div>
-        <span>Waiting... (host can start next round)</span>
+    <label>Your Review:</label>
+    <textarea id="reviewInput"></textarea><br>
+    <button id="sendReviewBtn">Submit Review</button>
+</div>
+
+<!-- VOTE -->
+<div id="screenVote" class="screen">
+    <div id="sceneStateVote" style="margin-bottom:15px;"></div>
+
+    <div class="box">
+        <div class="small">Now rating entry <span id="voteIndex"></span> / <span id="voteCount"></span></div>
+        <div class="small">Tagline:</div>
+        <div id="currentTaglineText"></div>
+        <hr>
+        <div class="small">Review (<span id="currentReviewToneText"></span>):</div>
+        <div id="currentReviewText"></div>
     </div>
 
+    <div id="voteButtons"></div>
+</div>
 
-    <!-- susan start: tutorial overlay (shows only once on first Prompt screen) -->
-    <div id="tutorialOverlay" style="
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.75);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  font-family: sans-serif;
-">
-        <div style="
-    width: min(560px, 92vw);
-    background: #111;
-    color: #fff;
-    border-radius: 12px;
-    padding: 18px 18px 14px 18px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  ">
-            <div style="font-size: 20px; font-weight: 700; margin-bottom: 10px;">
-                Quick Tutorial
-            </div>
-
-            <div style="line-height: 1.45; font-size: 14px;">
-                <ol style="margin: 0 0 10px 18px; padding: 0;">
-                    <li><b>Fill Blank A and Blank B</b> to complete the tagline.</li>
-                    <li>Next, you’ll be assigned someone else’s tagline.</li>
-                    <li><b>Write a review</b> in the required tone.</li>
-                    <li><b>Rate entries</b> 1–5. Highest score wins.</li>
-                </ol>
-            </div>
-
-            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:14px;">
-                <button id="tutorialResetBtn" style="
-        background: transparent; color: #aaa;
-        border: 1px solid #444; border-radius: 10px;
-        padding: 8px 12px; cursor: pointer;
-      ">
-                    Show again next time
-                </button>
-
-                <button id="tutorialGotItBtn" style="
-        background: #fff; color: #111;
-        border: none; border-radius: 10px;
-        padding: 8px 14px; cursor: pointer;
-        font-weight: 700;
-      ">
-                    Got it
-                </button>
-            </div>
-        </div>
+<!-- RESULTS -->
+<div id="screenResults" class="screen">
+    <div id="sceneStateResults" style="margin-bottom:15px;"></div>
+    <div class="box">
+        <div class="small">Top Results:</div>
+        <pre id="resultsText" style="white-space:pre-wrap;"></pre>
     </div>
-    <!-- susan end: tutorial overlay -->
+</div>
 
+<script>
+let ws;
+let lastServerMessageAt = null;
 
-    <script>
-        let ws;
-        // Update this if your server runs elsewhere (or set window.WS_URL before loading this page)
-        const WS_URL = window.WS_URL || "ws://127.0.0.1:8080";
+/* Load saved server info */
+const ipInput = document.getElementById("serverIpInput");
+const portInput = document.getElementById("serverPortInput");
 
-        // Connection status UI
-        let lastServerMessageAt = null;
-        function setConnStatus(state, label, detail) {
-            const dot = document.getElementById("connDot");
-            const lab = document.getElementById("connLabel");
-            const det = document.getElementById("connDetail");
+ipInput.value = localStorage.getItem("rb_server_ip") || "127.0.0.1";
+portInput.value = localStorage.getItem("rb_server_port") || "8080";
 
-            if (dot) {
-                dot.classList.remove("ok", "bad", "warn");
-                dot.classList.add(state);
-            }
-            if (lab) lab.textContent = label;
-            if (det) det.textContent = detail;
+function getWSUrl() {
+    const ip = ipInput.value.trim();
+    const port = portInput.value.trim();
+    return `ws://${ip}:${port}`;
+}
+
+function setConnStatus(state, label, detail) {
+    const dot = document.getElementById("connDot");
+    dot.className = `dot ${state}`;
+    document.getElementById("connLabel").textContent = label;
+    document.getElementById("connDetail").textContent = detail;
+}
+
+function connect() {
+    try { ws?.close(); } catch {}
+
+    const url = getWSUrl();
+    localStorage.setItem("rb_server_ip", ipInput.value);
+    localStorage.setItem("rb_server_port", portInput.value);
+
+    setConnStatus("warn", "Connecting…", url);
+
+    ws = new WebSocket(url);
+
+    ws.onopen = () => {
+        setConnStatus("ok", "Connected", url);
+        showScreen("screenLobby", "Connected. Waiting for server state…");
+    };
+
+    ws.onerror = () => {
+        setConnStatus("bad", "Connection error", url);
+    };
+
+    ws.onclose = () => {
+        setConnStatus("bad", "Disconnected", url);
+    };
+
+    ws.onmessage = (event) => {
+        lastServerMessageAt = new Date();
+        const state = JSON.parse(event.data);
+        const msg = state.prompt || "";
+
+        document.getElementById("startBtn").style.display =
+            state.isFirst && (state.scene === "Lobby" || state.scene === "Wait")
+                ? "inline" : "none";
+
+        switch (state.scene) {
+            case "Lobby": showScreen("screenLobby", msg); break;
+            case "Prompt":
+                showScreen("screenPrompt", msg);
+                document.getElementById("taglineTemplateText").innerText = state.taglineTemplate || "";
+                break;
+            case "Review":
+                showScreen("screenReview", msg);
+                document.getElementById("assignedTaglineText").innerText = state.assignedTagline || "";
+                document.getElementById("assignedToneText").innerText = state.assignedTone || "";
+                break;
+            case "Vote":
+                showScreen("screenVote", msg);
+                document.getElementById("voteIndex").innerText = state.entryIndex + 1;
+                document.getElementById("voteCount").innerText = state.entryCount;
+                document.getElementById("currentTaglineText").innerText = state.currentTagline;
+                document.getElementById("currentReviewText").innerText = state.currentReview;
+                document.getElementById("currentReviewToneText").innerText = state.currentReviewTone;
+                buildStarButtons(state.starButtons || [1,2,3,4,5]);
+                break;
+            case "Results":
+                showScreen("screenResults", msg);
+                document.getElementById("resultsText").innerText = state.resultsText || "";
+                break;
         }
+    };
+}
 
-        function formatAgo(d) {
-            if (!d) return "no server messages yet";
-            const ms = Date.now() - d.getTime();
-            const s = Math.floor(ms / 1000);
-            if (s < 2) return "just now";
-            if (s < 60) return `${s}s ago`;
-            const m = Math.floor(s / 60);
-            const r = s % 60;
-            return `${m}m ${r}s ago`;
-        }
-        // susan start: tutorial logic (only once, triggered on first Prompt screen)
-        const SUSAN_TUTORIAL_KEY = "reviewbomber_tutorial_seen_v1";
+function send(obj) {
+    if (ws?.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(obj));
+    }
+}
 
-        function susanShowTutorialOverlay() {
-            const overlay = document.getElementById("tutorialOverlay");
-            if (!overlay) return;
+function showScreen(id, msg) {
+    document.querySelectorAll(".screen").forEach(s => s.style.display = "none");
+    const el = document.getElementById(id);
+    el.style.display = "block";
+    const scene = el.querySelector("div[id^='sceneState']");
+    if (scene) scene.innerText = msg;
+}
 
-            overlay.style.display = "flex";
-
-            const gotItBtn = document.getElementById("tutorialGotItBtn");
-            const resetBtn = document.getElementById("tutorialResetBtn");
-
-            if (gotItBtn) {
-                gotItBtn.onclick = () => {
-                    sessionStorage.setItem(SUSAN_TUTORIAL_KEY, "1");
-                    overlay.style.display = "none";
-                };
-            }
-
-            // for debugging/testing: makes it show again next time you hit Prompt
-            if (resetBtn) {
-                resetBtn.onclick = () => {
-                    sessionStorage.removeItem(SUSAN_TUTORIAL_KEY);
-                    overlay.style.display = "none";
-                };
-            }
-        }
-
-        function susanMaybeShowTutorialOnPrompt() {
-            const seen = sessionStorage.getItem(SUSAN_TUTORIAL_KEY);
-            if (!seen) susanShowTutorialOverlay();
-        }
-        // susan end: tutorial logic
-
-        function showScreen(screenId, serverMessage) {
-            document.querySelectorAll(".screen").forEach(s => s.style.display = "none");
-            const screen = document.getElementById(screenId);
-            if (!screen) return;
-
-            screen.style.display = "block";
-
-            const sceneDiv = screen.querySelector("div[id^='sceneState']");
-            if (sceneDiv) sceneDiv.innerText = serverMessage;
-
-            // NOTE: we do NOT auto-clear all inputs anymore, because some phases
-            // (like Vote) don’t use inputs and clearing can be annoying during debugging.
-        }
-
-        function connect() {
-            try { ws?.close(); } catch (_) {}
-            lastServerMessageAt = null;
-            setConnStatus("warn", "Connecting…", WS_URL);
-
-            ws = new WebSocket(WS_URL);
-
-            ws.onopen = () => {
-                setConnStatus("ok", "Connected", `${WS_URL} • ${formatAgo(lastServerMessageAt)}`);
-                // Show lobby immediately so it doesn't look "dead" before first state packet arrives
-                showScreen("screenLobby", "Connected. Waiting for server state…");
-            };
-
-            ws.onerror = (e) => {
-                console.error("WebSocket error", e);
-                setConnStatus("bad", "Error", `${WS_URL} • check server / port / firewall`);
-            };
-
-            ws.onclose = () => {
-                setConnStatus("bad", "Disconnected", `${WS_URL} • ${formatAgo(lastServerMessageAt)}`);
-            };
-
-            ws.onmessage = (event) => {
-                lastServerMessageAt = new Date();
-                setConnStatus("ok", "Connected", `${WS_URL} • last msg ${formatAgo(lastServerMessageAt)}`);
-                const state = JSON.parse(event.data);
-                const serverMessage = state.prompt || "";
-
-                // Start button only for first player in Lobby or Wait (optional).
-                const startBtn = document.getElementById("startBtn");
-                const showStart = (state.isFirst && (state.scene === "Lobby" || state.scene === "Wait"));
-                startBtn.style.display = showStart ? "inline" : "none";
-
-                switch (state.scene) {
-                    case "Lobby":
-                        showScreen("screenLobby", serverMessage);
-                        break;
-
-                    case "Prompt":
-                        showScreen("screenPrompt", serverMessage);
-                        document.getElementById("taglineTemplateText").innerText = state.taglineTemplate || "";
-                        // susan start: show tutorial once on first time entering Prompt
-                        susanMaybeShowTutorialOnPrompt();
-                        // susan end: show tutorial once
-                        break;
-
-                    case "Review":
-                        showScreen("screenReview", serverMessage);
-                        document.getElementById("assignedTaglineText").innerText = state.assignedTagline || "";
-                        // Server may provide either assignedTone or a label field depending on your version:
-                        document.getElementById("assignedToneText").innerText =
-                            state.assignedTone || state.reviewRatingLabel || "";
-                        break;
-
-                    case "Vote":
-                        showScreen("screenVote", serverMessage);
-
-                        document.getElementById("voteIndex").innerText = (state.entryIndex + 1) || 1;
-                        document.getElementById("voteCount").innerText = state.entryCount || 0;
-
-                        document.getElementById("currentTaglineText").innerText = state.currentTagline || "";
-                        document.getElementById("currentReviewText").innerText = state.currentReview || "";
-                        document.getElementById("currentReviewToneText").innerText =
-                            state.currentReviewTone || state.currentReviewRating || "";
-
-                        // state.starButtons might be int[] or state.buttons might be string[]
-                        buildStarButtons(state.starButtons || state.buttons || [1, 2, 3, 4, 5]);
-                        break;
-
-                    case "Results":
-                        showScreen("screenResults", serverMessage);
-                        document.getElementById("resultsText").innerText = state.resultsText || "";
-                        break;
-
-                    case "Theme":
-                        showScreen("screenWait", serverMessage); // reuse same screen
-                        break;
-
-                    default:
-                        // fallback
-                        showScreen("screenWait", "Unknown scene: " + state.scene);
-                        break;
-                }
-            };
-        }
-
-        function send(obj) {
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify(obj));
-            }
-        }
-
-        // Lobby
-        document.getElementById("joinBtn").onclick = () => {
-            const name = document.getElementById("nameInput").value;
-            send({ type: "join", name });
-            document.getElementById("joinBtn").disabled = true;
+function buildStarButtons(arr) {
+    const c = document.getElementById("voteButtons");
+    c.innerHTML = "";
+    arr.forEach((n, i) => {
+        const b = document.createElement("button");
+        b.innerText = n;
+        b.onclick = () => {
+            send({ type: "choice", index: i });
+            c.querySelectorAll("button").forEach(x => x.disabled = true);
         };
+        c.appendChild(b);
+    });
+}
 
-        document.getElementById("startBtn").onclick = () => {
-            send({ type: "start" });
-            document.getElementById("startBtn").disabled = true;
-        };
+document.getElementById("joinBtn").onclick = () =>
+    send({ type: "join", name: nameInput.value });
 
-        // Prompt submit (two blanks)
-        document.getElementById("sendPromptBtn").onclick = () => {
-            const a = document.getElementById("blankAInput").value;
-            const b = document.getElementById("blankBInput").value;
-            send({ type: "input", a, b });
-            document.getElementById("sendPromptBtn").disabled = true;
-        };
+document.getElementById("startBtn").onclick = () =>
+    send({ type: "start" });
 
-        // Review submit
-        document.getElementById("sendReviewBtn").onclick = () => {
-            const text = document.getElementById("reviewInput").value;
-            send({ type: "input", text });
-            document.getElementById("sendReviewBtn").disabled = true;
-        };
+document.getElementById("sendPromptBtn").onclick = () =>
+    send({ type: "input", a: blankAInput.value, b: blankBInput.value });
 
-        // Vote buttons (always 1–5, no unicode)
-        function buildStarButtons(starButtons) {
-            const container = document.getElementById("voteButtons");
-            container.innerHTML = "";
+document.getElementById("sendReviewBtn").onclick = () =>
+    send({ type: "input", text: reviewInput.value });
 
-            starButtons.forEach((labelOrNumber, idx) => {
-                const btn = document.createElement("button");
-                btn.innerText = String(labelOrNumber); // "1".."5" (or whatever)
-                btn.onclick = () => {
-                    send({ type: "choice", index: idx }); // server interprets idx -> stars
-                    container.querySelectorAll("button").forEach(b => b.disabled = true);
-                };
-                container.appendChild(btn);
-            });
-        }
+document.getElementById("reconnectBtn").onclick = connect;
 
-        window.onload = connect;
-
-        // Reconnect button
-        document.getElementById("reconnectBtn").onclick = () => {
-            connect();
-        };
-
-        // Keep the detail line fresh even if server stops sending messages
-        setInterval(() => {
-            // Only update when we are currently connected (or connecting)
-            if (!document.getElementById("connDetail")) return;
-            const dot = document.getElementById("connDot");
-            const isOk = dot && dot.classList.contains("ok");
-            const isWarn = dot && dot.classList.contains("warn");
-            if (isOk) {
-                document.getElementById("connDetail").textContent = `${WS_URL} • last msg ${formatAgo(lastServerMessageAt)}`;
-            } else if (isWarn) {
-                document.getElementById("connDetail").textContent = `${WS_URL} • ${formatAgo(lastServerMessageAt)}`;
-            }
-        }, 1000);
-    </script>
+window.onload = connect;
+</script>
 
 </body>
 </html>
