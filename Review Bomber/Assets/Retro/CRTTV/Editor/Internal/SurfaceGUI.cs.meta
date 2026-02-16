@@ -14,5 +14,5 @@ AssetOrigin:
   productId: 241411
   packageName: 'Retro: CRT TV'
   packageVersion: 2.0.4
-  assetPath: Assets/FronkonGames/Retro/CRTTV/Editor/Internal/SurfaceGUI.cs
+  assetPath: Assets/Retro/CRTTV/Editor/Internal/SurfaceGUI.cs
   uploadId: 839830

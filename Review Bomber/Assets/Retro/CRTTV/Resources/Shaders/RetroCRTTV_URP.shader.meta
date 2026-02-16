@@ -13,5 +13,5 @@ AssetOrigin:
   productId: 241411
   packageName: 'Retro: CRT TV'
   packageVersion: 2.0.4
-  assetPath: Assets/FronkonGames/Retro/CRTTV/Resources/Shaders/RetroCRTTV_URP.shader
+  assetPath: Assets/Retro/CRTTV/Resources/Shaders/RetroCRTTV_URP.shader
   uploadId: 839830

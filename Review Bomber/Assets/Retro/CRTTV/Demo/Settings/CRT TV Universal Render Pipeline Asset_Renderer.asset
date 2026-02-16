@@ -1,0 +1,118 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de640fe3d0db1804a85f9fc8f5cadab6, type: 3}
+  m_Name: CRT TV Universal Render Pipeline Asset_Renderer
+  m_EditorClassIdentifier: 
+  debugShaders:
+    debugReplacementPS: {fileID: 4800000, guid: cf852408f2e174538bcd9b7fda1c5ae7, type: 3}
+    hdrDebugViewPS: {fileID: 4800000, guid: 573620ae32aec764abd4d728906d2587, type: 3}
+    probeVolumeSamplingDebugComputeShader: {fileID: 7200000, guid: 53626a513ea68ce47b59dc1299fe3959, type: 3}
+  probeVolumeResources:
+    probeVolumeDebugShader: {fileID: 0}
+    probeVolumeFragmentationDebugShader: {fileID: 0}
+    probeVolumeOffsetDebugShader: {fileID: 0}
+    probeVolumeSamplingDebugShader: {fileID: 0}
+    probeSamplingDebugMesh: {fileID: 0}
+    probeSamplingDebugTexture: {fileID: 0}
+    probeVolumeBlendStatesCS: {fileID: 0}
+  m_RendererFeatures:
+  - {fileID: 8092892000798256149}
+  m_RendererFeatureMap: 152c2e9165ba4f70
+  m_UseNativeRenderPass: 0
+  xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
+  postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
+  m_AssetVersion: 2
+  m_OpaqueLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_TransparentLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_DefaultStencilState:
+    overrideStencilState: 0
+    stencilReference: 0
+    stencilCompareFunction: 8
+    passOperation: 2
+    failOperation: 0
+    zFailOperation: 0
+  m_ShadowTransparentReceive: 1
+  m_RenderingMode: 0
+  m_DepthPrimingMode: 0
+  m_CopyDepthMode: 0
+  m_DepthAttachmentFormat: 0
+  m_DepthTextureFormat: 0
+  m_AccurateGbufferNormals: 0
+  m_IntermediateTextureMode: 1
+--- !u!114 &8092892000798256149
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a95a6e417d4177749a1df85d7d554f64, type: 3}
+  m_Name: CRTTV
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  settings:
+    intensity: 1
+    shadowmaskStrength: 1
+    shadowmaskLuminosity: 1
+    shadowmaskScale: 0.5
+    shadowmaskVerticalGapHardness: 0.1
+    shadowmaskHorizontalGapHardness: 0.8
+    shadowmaskColorOffset: {x: 0, y: -0.3, z: -0.6}
+    fishEyeStrength: 0.2
+    fishEyeZoom: {x: 1, y: 1}
+    distortion: 0.17
+    distortionSpeed: 1
+    distortionAmplitude: 2
+    vignetteSmoothness: 0.7
+    vignetteRounding: 0.5
+    vignetteBorders: {x: 0, y: 0.5}
+    shineStrength: 0.3
+    shineColor: {r: 0.5, g: 0.5, b: 0.5, a: 0.5}
+    shinePosition: {x: 0.5, y: 1}
+    rgbOffsetStrength: 0.25
+    colorBleedingStrength: 0.25
+    colorBleedingDistance: 0.5
+    colorCurves: {r: 0.95, g: 1.05, b: 0.95, a: 1}
+    gammaColor: {x: 0.9, y: 0.7, z: 1.2, w: 1}
+    scanlines: 1
+    scanlinesCount: 1.25
+    scanlinesVelocity: 3.5
+    interferenceStrength: 0.2
+    interferencePeakStrength: 0.3
+    interferencePeakPosition: 0.2
+    shakeStrength: 1
+    shakeRate: 0.2
+    movementStrength: 1
+    movementRate: 0.2
+    movementSpeed: 0.4
+    grain: 0
+    staticNoise: 0
+    barStrength: 0.1
+    barHeight: 6
+    barSpeed: 4
+    barOverflow: 1.2
+    flickerStrength: 0.1
+    flickerSpeed: 50
+    brightness: 0
+    contrast: 1
+    gamma: 1
+    hue: 0
+    saturation: 1
+    affectSceneView: 0
+    whenToInsert: 550
+    useScaledTime: 1
