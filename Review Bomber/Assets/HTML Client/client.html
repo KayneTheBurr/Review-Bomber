@@ -34,6 +34,13 @@ input.serverInput {
     width: 140px;
     padding: 4px;
 }
+
+    button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        filter: grayscale(1);
+    }
+
 </style>
 </head>
 <body>
@@ -134,7 +141,24 @@ input.serverInput {
 </div>
 
 <script>
-let ws;
+    let ws;
+    let currentScreenId = null;
+
+    function disableOnce(btn) {
+        if (!btn) return;
+        if (btn.dataset.allowMulti === "1") return; // 允许多次点击的按钮例外
+        btn.disabled = true;
+    }
+
+    function resetButtonsInScreen(screenEl) {
+        if (!screenEl) return;
+        screenEl.querySelectorAll("button").forEach(b => {
+            // 允许多次点击的按钮不做处理（比如 Connect）
+            if (b.dataset.allowMulti === "1") return;
+            b.disabled = false;
+        });
+    }
+
 let lastServerMessageAt = null;
 
 /* Load saved server info */
@@ -224,40 +248,57 @@ function send(obj) {
     }
 }
 
-function showScreen(id, msg) {
-    document.querySelectorAll(".screen").forEach(s => s.style.display = "none");
-    const el = document.getElementById(id);
-    el.style.display = "block";
-    const scene = el.querySelector("div[id^='sceneState']");
-    if (scene) scene.innerText = msg;
-}
+    function showScreen(id, msg) {
+        document.querySelectorAll(".screen").forEach(s => s.style.display = "none");
+        const el = document.getElementById(id);
+        el.style.display = "block";
 
-function buildStarButtons(arr) {
-    const c = document.getElementById("voteButtons");
-    c.innerHTML = "";
-    arr.forEach((n, i) => {
-        const b = document.createElement("button");
-        b.innerText = n;
-        b.onclick = () => {
-            send({ type: "choice", index: i });
-            c.querySelectorAll("button").forEach(x => x.disabled = true);
-        };
-        c.appendChild(b);
-    });
-}
+        if (id !== currentScreenId) {
+            resetButtonsInScreen(el);
+            currentScreenId = id;
+        }
 
-document.getElementById("joinBtn").onclick = () =>
-    send({ type: "join", name: nameInput.value });
+        const scene = el.querySelector("div[id^='sceneState']");
+        if (scene) scene.innerText = msg;
+    }
 
-document.getElementById("startBtn").onclick = () =>
-    send({ type: "start" });
+    function buildStarButtons(arr) {
+        const c = document.getElementById("voteButtons");
+        c.innerHTML = "";
+        arr.forEach((n, i) => {
+            const b = document.createElement("button");
+            b.innerText = n;
+            b.onclick = (e) => {
+                send({ type: "choice", index: i });
+                disableOnce(e.currentTarget);
+                c.querySelectorAll("button").forEach(x => x.disabled = true);
+            };
+            c.appendChild(b);
+        });
+    }
 
-document.getElementById("sendPromptBtn").onclick = () =>
-    send({ type: "input", a: blankAInput.value, b: blankBInput.value });
 
-document.getElementById("sendReviewBtn").onclick = () =>
-    send({ type: "input", text: reviewInput.value });
+    document.getElementById("joinBtn").onclick = (e) => {
+        send({ type: "join", name: nameInput.value });
+        disableOnce(e.currentTarget);
+    };
 
+    document.getElementById("startBtn").onclick = (e) => {
+        send({ type: "start" });
+        disableOnce(e.currentTarget);
+    };
+
+    document.getElementById("sendPromptBtn").onclick = (e) => {
+        send({ type: "input", a: blankAInput.value, b: blankBInput.value });
+        disableOnce(e.currentTarget);
+    };
+
+    document.getElementById("sendReviewBtn").onclick = (e) => {
+        send({ type: "input", text: reviewInput.value });
+        disableOnce(e.currentTarget);
+    };
+
+document.getElementById("reconnectBtn").dataset.allowMulti = "1";
 document.getElementById("reconnectBtn").onclick = connect;
 
 window.onload = connect;
