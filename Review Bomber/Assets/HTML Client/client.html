@@ -143,6 +143,7 @@ input.serverInput {
 <script>
     let ws;
     let currentScreenId = null;
+    let voteLocked = false;
 
     function disableOnce(btn) {
         if (!btn) return;
@@ -226,14 +227,16 @@ function connect() {
                 document.getElementById("assignedToneText").innerText = state.assignedTone || "";
                 break;
             case "Vote":
+                voteLocked = false;
                 showScreen("screenVote", msg);
                 document.getElementById("voteIndex").innerText = state.entryIndex + 1;
                 document.getElementById("voteCount").innerText = state.entryCount;
                 document.getElementById("currentTaglineText").innerText = state.currentTagline;
                 document.getElementById("currentReviewText").innerText = state.currentReview;
                 document.getElementById("currentReviewToneText").innerText = state.currentReviewTone;
-                buildStarButtons(state.starButtons || [1,2,3,4,5]);
+                buildStarButtons(state.starButtons || [1, 2, 3, 4, 5]);
                 break;
+
             case "Results":
                 showScreen("screenResults", msg);
                 document.getElementById("resultsText").innerText = state.resultsText || "";
@@ -265,17 +268,30 @@ function send(obj) {
     function buildStarButtons(arr) {
         const c = document.getElementById("voteButtons");
         c.innerHTML = "";
+
         arr.forEach((n, i) => {
             const b = document.createElement("button");
             b.innerText = n;
+
+            //如果已经投过票，新建按钮也保持 disabled
+            b.disabled = voteLocked;
+
             b.onclick = (e) => {
+                if (voteLocked) return;   //防止重复投票
+
+                voteLocked = true;
+
                 send({ type: "choice", index: i });
-                disableOnce(e.currentTarget);
+
+                //立即禁用所有按钮（视觉反馈）
                 c.querySelectorAll("button").forEach(x => x.disabled = true);
             };
+
             c.appendChild(b);
         });
     }
+
+
 
 
     document.getElementById("joinBtn").onclick = (e) => {
