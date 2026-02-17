@@ -25,7 +25,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -606,15 +605,7 @@ public class StageManagerServer : MonoBehaviour
         if (sfxSource != null && playerJoinSFXList != null)
         {
             int randomInt = UnityEngine.Random.Range(0, playerJoinSFXList.Count);
-            if(randomInt == 2)
-            {
-                sfxSource.PlayOneShot(playerJoinSFXList[randomInt], 0.2f);
-            }
-            else
-            {
-                sfxSource.PlayOneShot(playerJoinSFXList[randomInt]);
-            }
-
+            sfxSource.PlayOneShot(playerJoinSFXList[randomInt]);
         }
     }
 
@@ -875,18 +866,14 @@ public class StageManagerServer : MonoBehaviour
         {
             try
             {
-                Debug.Log("Assigning review for " + i);
                 var conn = orderedConnections[i];
 
-                Debug.Log("Test A");
                 var p = players[conn];
-                Debug.Log("Test B");
-
+                
                 p.assignedEntryIndex = (i + 1) % n;
-                Debug.Log("Test C");
-
+                
                 p.rating = (ReviewRating)_rng.Next(0, 3);
-                Debug.Log("Test D");
+                
             }
             catch (System.Exception ex)
             {

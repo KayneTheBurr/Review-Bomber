@@ -486,6 +486,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: UI_PROMPT
       objectReference: {fileID: 0}
+    - target: {fileID: 8573756681878107780, guid: b0a460dad1aeac04c862fa7cbecb1b28, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1491,6 +1495,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 3573332086562962725, guid: 43cdacf7aee4c6d41adb5fd757340f0b, type: 3}
+      propertyPath: port
+      value: 8000
+      objectReference: {fileID: 0}
+    - target: {fileID: 3573332086562962725, guid: 43cdacf7aee4c6d41adb5fd757340f0b, type: 3}
       propertyPath: sfxSource
       value: 
       objectReference: {fileID: 1565302035}
@@ -1504,7 +1512,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3573332086562962725, guid: 43cdacf7aee4c6d41adb5fd757340f0b, type: 3}
       propertyPath: listenAddress
-      value: 127.0.0.1
+      value: 192.168.1.6
       objectReference: {fileID: 0}
     - target: {fileID: 3573332086562962725, guid: 43cdacf7aee4c6d41adb5fd757340f0b, type: 3}
       propertyPath: playerJoinSFX
