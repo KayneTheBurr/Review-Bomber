@@ -621,6 +621,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: UI_PROMPT
       objectReference: {fileID: 0}
+    - target: {fileID: 8573756681878107780, guid: b0a460dad1aeac04c862fa7cbecb1b28, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
