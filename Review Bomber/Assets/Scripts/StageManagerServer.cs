@@ -612,7 +612,14 @@ public class StageManagerServer : MonoBehaviour
         if (sfxSource != null && playerJoinSFXList != null)
         {
             int randomInt = UnityEngine.Random.Range(0, playerJoinSFXList.Count);
-            sfxSource.PlayOneShot(playerJoinSFXList[randomInt]);
+            if (randomInt == 2)
+            {
+                sfxSource.PlayOneShot(playerJoinSFXList[randomInt], 0.1f);
+            }
+            else
+            {
+                sfxSource.PlayOneShot(playerJoinSFXList[randomInt]);
+            }
         }
     }
 
