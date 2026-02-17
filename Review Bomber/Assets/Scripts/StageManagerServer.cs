@@ -520,6 +520,9 @@ public class StageManagerServer : MonoBehaviour
         var ui = UIManager.instance;
         if (ui.prompt != null)
             ui.prompt.text = prompt; // this is the template with {A}/{B}
+
+        if (ui.prompt_theme != null)
+            ui.prompt_theme.text = theme;
     }
 
     private void UpdateVoteUI()
