@@ -30,6 +30,7 @@ public class UIManager : MonoBehaviour
 
     [Header("Prompt UI Elements")]
     public TMP_Text prompt;
+    public TMP_Text prompt_theme;
 
     [Header("Vote UI Elements")]
     public TMP_Text finalPrompt;
