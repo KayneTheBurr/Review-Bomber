@@ -888,7 +888,7 @@ public class StageManagerServer : MonoBehaviour
                 
                 p.assignedEntryIndex = (i + 1) % n;
                 
-                p.rating = (ReviewRating)_rng.Next(0, 3);
+                //p.rating = (ReviewRating)_rng.Next(0, 3);
                 
             }
             catch (System.Exception ex)
