@@ -44,17 +44,23 @@ public class UIManager : MonoBehaviour
 
     [Header("Results UI Elements")]
     //first place
+    public TMP_Text firstPlacePromptName;
     public TMP_Text firstPlacePrompt;
+    public TMP_Text firstPlaceReviewName;
     public TMP_Text firstPlaceReview;
     public Image firstPlaceStarRank;
     public TMP_Text firstPlaceScore;
     //second place
+    public TMP_Text secondPlacePromptName;
     public TMP_Text secondPlacePrompt;
+    public TMP_Text secondPlaceReviewName;
     public TMP_Text secondPlaceReview;
     public Image secondPlaceStarRank;
     public TMP_Text secondPlaceScore;
-    //second place
+    //third place
+    public TMP_Text thirdPlacePromptName;
     public TMP_Text thirdPlacePrompt;
+    public TMP_Text thirdPlaceReviewName;
     public TMP_Text thirdPlaceReview;
     public Image thirdPlaceStarRank;
     public TMP_Text thirdPlaceScore;
