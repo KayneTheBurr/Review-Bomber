@@ -317,6 +317,13 @@ public class StageManagerServer : MonoBehaviour
                                 AdvanceState();
                             break;
 
+                        case "newRound":
+                            // Host-only: after a round ends (Results), start the next round.
+                            // Client should send: { type:"newRound" }
+                            if (p.isFirst && (currentState == SceneState.Results))
+                                AdvanceState(); // Results -> Theme
+                            break;
+
                         case "input":
                             HandleInput(socket, p, msg);
                             break;
@@ -755,10 +762,12 @@ public class StageManagerServer : MonoBehaviour
 
             case SceneState.Results:
                 Debug.Log("[Server] Transition Results -> Theme");
+                StartNewRound();                 //点“Start New Round”后立刻清空上一轮数据
                 PickThemeAndPromptForRound();
                 currentState = SceneState.Theme;
                 themeTimerRequested = true;
                 break;
+
 
 
         }
