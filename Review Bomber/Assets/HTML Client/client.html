@@ -1,341 +1,524 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Review Bomber Client</title>
-<style>
-body { font-family: sans-serif; padding: 20px; }
-.screen { display: none; margin-bottom: 15px; }
-button { margin: 5px; }
-textarea { width: 100%; height: 140px; }
-.small { font-size: 0.9em; opacity: 0.85; }
-.box { border: 1px solid #ccc; padding: 10px; margin: 10px 0; }
-/* Connection status indicator */
-.statusBar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 10px 0 18px;
-    padding: 8px 10px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    flex-wrap: wrap;
-}
-.dot { width: 10px; height: 10px; border-radius: 999px; background: #999; display: inline-block; }
-.dot.ok { background: #2aa745; }
-.dot.bad { background: #d64545; }
-.dot.warn { background: #d0a400; }
-.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
-.grow { flex: 1; }
-.smallBtn { padding: 6px 10px; font-size: 0.9em; }
+    <meta charset="UTF-8">
+    <title>Review Bomber Client</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+        }
 
-input.serverInput {
-    width: 140px;
-    padding: 4px;
-}
+        .screen {
+            display: none;
+            margin-bottom: 15px;
+        }
 
-    button:disabled {
-        opacity: 0.45;
-        cursor: not-allowed;
-        filter: grayscale(1);
-    }
+        button {
+            margin: 5px;
+        }
 
-</style>
+        textarea {
+            width: 100%;
+            height: 140px;
+        }
+
+        .small {
+            font-size: 0.9em;
+            opacity: 0.85;
+        }
+
+        .box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 10px;
+        }
+
+        /* Connection status indicator */
+        .statusBar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0 18px;
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            flex-wrap: wrap;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            background: #999;
+            display: inline-block;
+        }
+
+            .dot.ok {
+                background: #2aa745;
+            }
+
+            .dot.bad {
+                background: #d64545;
+            }
+
+            .dot.warn {
+                background: #d0a400;
+            }
+
+        .mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        .grow {
+            flex: 1;
+        }
+
+        .smallBtn {
+            padding: 6px 10px;
+            font-size: 0.9em;
+        }
+
+        input.serverInput {
+            width: 140px;
+            padding: 4px;
+        }
+
+        button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        /* ===== Results New Round button (NOT fixed; sits under results) ===== */
+        .resultsButtonContainer {
+            margin-top: 26px;
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: center;
+        }
+
+        #newRoundBtn {
+            padding: 14px 28px;
+            font-size: 1.2em;
+            border-radius: 12px;
+            border: 2px solid #222;
+            background: #f6f6f6;
+            cursor: pointer;
+            transform: translateY(0);
+            transition: transform 120ms ease, box-shadow 120ms ease;
+            box-shadow: 0 2px 0 rgba(0,0,0,0.25);
+        }
+
+            #newRoundBtn:not(:disabled):hover {
+                transform: translateY(-1px);
+                box-shadow: 0 3px 0 rgba(0,0,0,0.28);
+            }
+
+            #newRoundBtn:not(:disabled):active {
+                transform: translateY(1px);
+                box-shadow: 0 1px 0 rgba(0,0,0,0.22);
+            }
+
+        /* ===== Vote buttons: fancy star pills (layout, no overlap) ===== */
+        #voteButtonsContainer {
+            margin-top: 18px;
+            padding: 14px 12px;
+            border: 1px solid #ddd;
+            border-radius: 14px;
+            background: #fafafa;
+        }
+
+        #voteButtonsHeader {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+            #voteButtonsHeader b {
+                font-size: 1.05em;
+            }
+
+        #voteHint {
+            opacity: 0.75;
+            font-size: 0.9em;
+        }
+
+        #voteButtons {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .starBtn {
+            padding: 12px 10px;
+            border-radius: 14px;
+            border: 2px solid #222;
+            background: linear-gradient(180deg, #ffffff, #f2f2f2);
+            box-shadow: 0 3px 0 rgba(0,0,0,0.25);
+            cursor: pointer;
+            font-size: 1.05em;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            user-select: none;
+            transform: translateY(0);
+            transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+        }
+
+            .starBtn .num {
+                font-weight: 700;
+            }
+
+            .starBtn .star {
+                font-size: 1.1em;
+            }
+
+            .starBtn:not(:disabled):hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 0 rgba(0,0,0,0.28);
+                filter: brightness(1.02);
+            }
+
+            .starBtn:not(:disabled):active {
+                transform: translateY(1px);
+                box-shadow: 0 2px 0 rgba(0,0,0,0.22);
+            }
+
+        /* Mobile-ish fallback if narrow */
+        @media (max-width: 520px) {
+            #voteButtons {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+    </style>
 </head>
 <body>
 
-<h1>Review Bomber (Client)</h1>
+    <h1>Review Bomber (Client)</h1>
 
-<!-- Connection Status -->
-<div class="statusBar">
-    <span id="connDot" class="dot warn"></span>
+    <!-- Connection Status -->
+    <div class="statusBar">
+        <span id="connDot" class="dot warn"></span>
 
-    <div>
-        <label class="small">Server IP</label><br>
-        <input id="serverIpInput" class="serverInput" placeholder="127.0.0.1">
+        <div>
+            <label class="small">Server IP</label><br>
+            <input id="serverIpInput" class="serverInput" placeholder="127.0.0.1">
+        </div>
+
+        <div>
+            <label class="small">Port</label><br>
+            <input id="serverPortInput" class="serverInput" placeholder="8080">
+        </div>
+
+        <div class="grow">
+            <div><b>Status:</b> <span id="connLabel">Not connected</span></div>
+            <div class="small mono" id="connDetail"></div>
+        </div>
+
+        <button id="reconnectBtn" class="smallBtn">Connect</button>
     </div>
 
-    <div>
-        <label class="small">Port</label><br>
-        <input id="serverPortInput" class="serverInput" placeholder="8080">
+    <!-- LOBBY -->
+    <div id="screenLobby" class="screen">
+        <div id="sceneStateLobby" style="margin-bottom:15px;"></div>
+        <label>Your Name:</label>
+        <input type="text" id="nameInput" autocomplete="off">
+        <button id="joinBtn">Join</button>
+        <button id="startBtn" style="display:none;">Start Game</button>
     </div>
 
-    <div class="grow">
-        <div><b>Status:</b> <span id="connLabel">Not connected</span></div>
-        <div class="small mono" id="connDetail"></div>
+    <!-- PROMPT -->
+    <div id="screenPrompt" class="screen">
+        <div id="sceneStatePrompt" style="margin-bottom:15px;"></div>
+
+        <div class="box">
+            <div class="small">Tagline Template:</div>
+            <div id="taglineTemplateText"></div>
+        </div>
+
+        <label>Blank A:</label>
+        <input type="text" id="blankAInput" autocomplete="off"><br><br>
+
+        <label>Blank B:</label>
+        <input type="text" id="blankBInput" autocomplete="off"><br><br>
+
+        <button id="sendPromptBtn">Submit Tagline</button>
     </div>
 
-    <button id="reconnectBtn" class="smallBtn">Connect</button>
-</div>
+    <!-- REVIEW -->
+    <div id="screenReview" class="screen">
+        <div id="sceneStateReview" style="margin-bottom:15px;"></div>
 
-<!-- LOBBY -->
-<div id="screenLobby" class="screen">
-    <div id="sceneStateLobby" style="margin-bottom:15px;"></div>
-    <label>Your Name:</label>
-    <input type="text" id="nameInput">
-    <button id="joinBtn">Join</button>
-    <button id="startBtn" style="display:none;">Start Game</button>
-</div>
+        <div class="box">
+            <div class="small">You are reviewing this tagline:</div>
+            <div id="assignedTaglineText"></div>
+        </div>
 
-<!-- PROMPT -->
-<div id="screenPrompt" class="screen">
-    <div id="sceneStatePrompt" style="margin-bottom:15px;"></div>
+        <!-- ✅ Removed: required tone box -->
 
-    <div class="box">
-        <div class="small">Tagline Template:</div>
-        <div id="taglineTemplateText"></div>
+        <label>Your Review:</label>
+        <textarea id="reviewInput" autocomplete="off"></textarea><br>
+        <button id="sendReviewBtn">Submit Review</button>
     </div>
 
-    <label>Blank A:</label>
-    <input type="text" id="blankAInput"><br><br>
+    <!-- VOTE -->
+    <div id="screenVote" class="screen">
+        <div id="sceneStateVote" style="margin-bottom:15px;"></div>
 
-    <label>Blank B:</label>
-    <input type="text" id="blankBInput"><br><br>
+        <div class="box">
+            <div class="small">Now rating entry <span id="voteIndex"></span> / <span id="voteCount"></span></div>
+            <div class="small">Tagline:</div>
+            <div id="currentTaglineText"></div>
+            <hr>
+            <div class="small">Review:</div>
+            <div id="currentReviewText"></div>
+        </div>
 
-    <button id="sendPromptBtn">Submit Tagline</button>
-</div>
-
-<!-- REVIEW -->
-<div id="screenReview" class="screen">
-    <div id="sceneStateReview" style="margin-bottom:15px;"></div>
-
-    <div class="box">
-        <div class="small">You are reviewing this tagline:</div>
-        <div id="assignedTaglineText"></div>
+        <!-- ✅ Vote buttons in normal flow (no overlap, fancy UI) -->
+        <div id="voteButtonsContainer">
+            <div id="voteButtonsHeader">
+                <b>Rate this entry</b>
+                <div id="voteHint" class="small">Tap once to lock in</div>
+            </div>
+            <div id="voteButtons"></div>
+        </div>
     </div>
 
-    <div class="box">
-        <div class="small">Your required review tone:</div>
-        <div id="assignedToneText"></div>
+    <!-- RESULTS -->
+    <div id="screenResults" class="screen">
+        <div id="sceneStateResults" style="margin-bottom:15px;"></div>
+        <div class="box">
+            <div class="small">Top Results:</div>
+            <pre id="resultsText" style="white-space:pre-wrap;"></pre>
+        </div>
+
+        <!-- ✅ Button under results (no fixed) -->
+        <div class="resultsButtonContainer">
+            <button id="newRoundBtn" style="display:none;">Start New Round</button>
+        </div>
     </div>
 
-    <label>Your Review:</label>
-    <textarea id="reviewInput"></textarea><br>
-    <button id="sendReviewBtn">Submit Review</button>
-</div>
+    <script>
+        let ws;
+        let currentScreenId = null;
+        let voteLocked = false;
+        let lastVoteEntryIndex = -1;
+        let lastServerMessageAt = null;
 
-<!-- VOTE -->
-<div id="screenVote" class="screen">
-    <div id="sceneStateVote" style="margin-bottom:15px;"></div>
-
-    <div class="box">
-        <div class="small">Now rating entry <span id="voteIndex"></span> / <span id="voteCount"></span></div>
-        <div class="small">Tagline:</div>
-        <div id="currentTaglineText"></div>
-        <hr>
-        <div class="small">Review (<span id="currentReviewToneText"></span>):</div>
-        <div id="currentReviewText"></div>
-    </div>
-
-    <div id="voteButtons"></div>
-</div>
-
-<!-- RESULTS -->
-<div id="screenResults" class="screen">
-    <button id="newRoundBtn" style="display:none;">Start New Round</button>
-    <div id="sceneStateResults" style="margin-bottom:15px;"></div>
-    <div class="box">
-        <div class="small">Top Results:</div>
-        <pre id="resultsText" style="white-space:pre-wrap;"></pre>
-    </div>
-</div>
-
-<script>
-    let ws;
-    let currentScreenId = null;
-    let voteLocked = false;
-    let lastVoteEntryIndex = -1;
-
-
-    function disableOnce(btn) {
-        if (!btn) return;
-        if (btn.dataset.allowMulti === "1") return; // 允许多次点击的按钮例外
-        btn.disabled = true;
-    }
-
-    function resetButtonsInScreen(screenEl) {
-        if (!screenEl) return;
-        screenEl.querySelectorAll("button").forEach(b => {
-            // 允许多次点击的按钮不做处理（比如 Connect）
-            if (b.dataset.allowMulti === "1") return;
-            b.disabled = false;
-        });
-    }
-
-let lastServerMessageAt = null;
-
-/* Load saved server info */
-const ipInput = document.getElementById("serverIpInput");
-const portInput = document.getElementById("serverPortInput");
-
-ipInput.value = localStorage.getItem("rb_server_ip") || "127.0.0.1";
-portInput.value = localStorage.getItem("rb_server_port") || "8080";
-
-function getWSUrl() {
-    const ip = ipInput.value.trim();
-    const port = portInput.value.trim();
-    return `ws://${ip}:${port}`;
-}
-
-function setConnStatus(state, label, detail) {
-    const dot = document.getElementById("connDot");
-    dot.className = `dot ${state}`;
-    document.getElementById("connLabel").textContent = label;
-    document.getElementById("connDetail").textContent = detail;
-}
-
-function connect() {
-    try { ws?.close(); } catch {}
-
-    const url = getWSUrl();
-    localStorage.setItem("rb_server_ip", ipInput.value);
-    localStorage.setItem("rb_server_port", portInput.value);
-
-    setConnStatus("warn", "Connecting…", url);
-
-    ws = new WebSocket(url);
-
-    ws.onopen = () => {
-        setConnStatus("ok", "Connected", url);
-        showScreen("screenLobby", "Connected. Waiting for server state…");
-    };
-
-    ws.onerror = () => {
-        setConnStatus("bad", "Connection error", url);
-    };
-
-    ws.onclose = () => {
-        setConnStatus("bad", "Disconnected", url);
-    };
-
-    ws.onmessage = (event) => {
-        lastServerMessageAt = new Date();
-        const state = JSON.parse(event.data);
-        const msg = state.prompt || "";
-
-        document.getElementById("startBtn").style.display =
-            state.isFirst && (state.scene === "Lobby" || state.scene === "Wait")
-                ? "inline" : "none";
-        document.getElementById("newRoundBtn").style.display =
-            state.isFirst && (state.scene === "Results")
-                ? "inline" : "none";
-
-
-        switch (state.scene) {
-            case "Lobby": showScreen("screenLobby", msg); break;
-            case "Prompt":
-                showScreen("screenPrompt", msg);
-                document.getElementById("taglineTemplateText").innerText = state.taglineTemplate || "";
-                break;
-            case "Review":
-                showScreen("screenReview", msg);
-                document.getElementById("assignedTaglineText").innerText = state.assignedTagline || "";
-                document.getElementById("assignedToneText").innerText = state.assignedTone || "";
-                break;
-            case "Vote":
-                if (state.entryIndex !== lastVoteEntryIndex) {
-                    voteLocked = false;
-                    lastVoteEntryIndex = state.entryIndex;
-                }
-
-                showScreen("screenVote", msg);
-                document.getElementById("voteIndex").innerText = state.entryIndex + 1;
-                document.getElementById("voteCount").innerText = state.entryCount;
-                document.getElementById("currentTaglineText").innerText = state.currentTagline;
-                document.getElementById("currentReviewText").innerText = state.currentReview;
-                document.getElementById("currentReviewToneText").innerText = state.currentReviewTone;
-                buildStarButtons(state.starButtons || [1, 2, 3, 4, 5]);
-                break;
-
-
-            case "Results":
-                showScreen("screenResults", msg);
-                document.getElementById("resultsText").innerText = state.resultsText || "";
-                break;
-        }
-    };
-}
-
-function send(obj) {
-    if (ws?.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify(obj));
-    }
-}
-
-    function showScreen(id, msg) {
-        document.querySelectorAll(".screen").forEach(s => s.style.display = "none");
-        const el = document.getElementById(id);
-        el.style.display = "block";
-
-        if (id !== currentScreenId) {
-            resetButtonsInScreen(el);
-            currentScreenId = id;
+        /* ========= UI Helpers ========= */
+        function disableOnce(btn) {
+            if (!btn) return;
+            if (btn.dataset.allowMulti === "1") return; // Connect can be clicked multiple times
+            btn.disabled = true;
         }
 
-        const scene = el.querySelector("div[id^='sceneState']");
-        if (scene) scene.innerText = msg;
-    }
+        function resetButtonsInScreen(screenEl) {
+            if (!screenEl) return;
+            screenEl.querySelectorAll("button").forEach(b => {
+                if (b.dataset.allowMulti === "1") return;
+                b.disabled = false;
+            });
+        }
 
-    function buildStarButtons(arr) {
-        const c = document.getElementById("voteButtons");
-        c.innerHTML = "";
+        function showScreen(id, msg) {
+            document.querySelectorAll(".screen").forEach(s => s.style.display = "none");
+            const el = document.getElementById(id);
+            el.style.display = "block";
 
-        arr.forEach((n, i) => {
-            const b = document.createElement("button");
-            b.innerText = n;
+            if (id !== currentScreenId) {
+                resetButtonsInScreen(el);
+                currentScreenId = id;
+            }
 
-            //如果已经投过票，新建按钮也保持 disabled
-            b.disabled = voteLocked;
+            const scene = el.querySelector("div[id^='sceneState']");
+            if (scene) scene.innerText = msg;
+        }
 
-            b.onclick = (e) => {
-                if (voteLocked) return;   //防止重复投票
+        function clearPromptInputs() {
+            const a = document.getElementById("blankAInput");
+            const b = document.getElementById("blankBInput");
+            if (a) a.value = "";
+            if (b) b.value = "";
+        }
 
-                voteLocked = true;
+        function clearReviewInput() {
+            const t = document.getElementById("reviewInput");
+            if (t) t.value = "";
+        }
 
-                send({ type: "choice", index: i });
+        /* ========= Connection ========= */
+        const ipInput = document.getElementById("serverIpInput");
+        const portInput = document.getElementById("serverPortInput");
 
-                //立即禁用所有按钮（视觉反馈）
-                c.querySelectorAll("button").forEach(x => x.disabled = true);
+        ipInput.value = localStorage.getItem("rb_server_ip") || "127.0.0.1";
+        portInput.value = localStorage.getItem("rb_server_port") || "8080";
+
+        function getWSUrl() {
+            const ip = ipInput.value.trim();
+            const port = portInput.value.trim();
+            return `ws://${ip}:${port}`;
+        }
+
+        function setConnStatus(state, label, detail) {
+            const dot = document.getElementById("connDot");
+            dot.className = `dot ${state}`;
+            document.getElementById("connLabel").textContent = label;
+            document.getElementById("connDetail").textContent = detail;
+        }
+
+        function connect() {
+            try { ws?.close(); } catch { }
+
+            const url = getWSUrl();
+            localStorage.setItem("rb_server_ip", ipInput.value);
+            localStorage.setItem("rb_server_port", portInput.value);
+
+            setConnStatus("warn", "Connecting…", url);
+
+            ws = new WebSocket(url);
+
+            ws.onopen = () => {
+                setConnStatus("ok", "Connected", url);
+                showScreen("screenLobby", "Connected. Waiting for server state…");
             };
 
-            c.appendChild(b);
-        });
-    }
+            ws.onerror = () => {
+                setConnStatus("bad", "Connection error", url);
+            };
 
+            ws.onclose = () => {
+                setConnStatus("bad", "Disconnected", url);
+            };
 
+            ws.onmessage = (event) => {
+                lastServerMessageAt = new Date();
+                const state = JSON.parse(event.data);
+                const msg = state.prompt || "";
 
+                document.getElementById("startBtn").style.display =
+                    state.isFirst && (state.scene === "Lobby" || state.scene === "Wait")
+                        ? "inline" : "none";
 
-    document.getElementById("joinBtn").onclick = (e) => {
-        send({ type: "join", name: nameInput.value });
-        disableOnce(e.currentTarget);
-    };
+                document.getElementById("newRoundBtn").style.display =
+                    state.isFirst && (state.scene === "Results")
+                        ? "inline" : "none";
 
-    document.getElementById("startBtn").onclick = (e) => {
-        send({ type: "start" });
-        disableOnce(e.currentTarget);
-    };
+                switch (state.scene) {
+                    case "Lobby":
+                        showScreen("screenLobby", msg);
+                        break;
 
-    document.getElementById("sendPromptBtn").onclick = (e) => {
-        send({ type: "input", a: blankAInput.value, b: blankBInput.value });
-        disableOnce(e.currentTarget);
-    };
+                    case "Prompt":
+                        showScreen("screenPrompt", msg);
+                        document.getElementById("taglineTemplateText").innerText = state.taglineTemplate || "";
+                        clearPromptInputs(); // prevent previous round text sticking
+                        break;
 
-    document.getElementById("sendReviewBtn").onclick = (e) => {
-        send({ type: "input", text: reviewInput.value });
-        disableOnce(e.currentTarget);
-    };
+                    case "Review":
+                        showScreen("screenReview", msg);
+                        document.getElementById("assignedTaglineText").innerText = state.assignedTagline || "";
+                        clearReviewInput(); // prevent previous round text sticking
+                        break;
 
-    document.getElementById("newRoundBtn").onclick = (e) => {
-        send({ type: "newRound" });
-        disableOnce(e.currentTarget);
-    };
+                    case "Vote":
+                        if (state.entryIndex !== lastVoteEntryIndex) {
+                            voteLocked = false;
+                            lastVoteEntryIndex = state.entryIndex;
+                        }
 
+                        showScreen("screenVote", msg);
+                        document.getElementById("voteIndex").innerText = state.entryIndex + 1;
+                        document.getElementById("voteCount").innerText = state.entryCount;
+                        document.getElementById("currentTaglineText").innerText = state.currentTagline;
+                        document.getElementById("currentReviewText").innerText = state.currentReview;
 
-document.getElementById("reconnectBtn").dataset.allowMulti = "1";
-document.getElementById("reconnectBtn").onclick = connect;
+                        buildStarButtons(state.starButtons || [1, 2, 3, 4, 5]);
+                        break;
 
-<!--window.onload = connect; -->
-</script>
+                    case "Results":
+                        showScreen("screenResults", msg);
+                        document.getElementById("resultsText").innerText = state.resultsText || "";
+                        // optional double-safety:
+                        clearPromptInputs();
+                        clearReviewInput();
+                        break;
+                }
+            };
+        }
+
+        function send(obj) {
+            if (ws?.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify(obj));
+            }
+        }
+
+        /* ========= Vote UI ========= */
+        function buildStarButtons(arr) {
+            const c = document.getElementById("voteButtons");
+            c.innerHTML = "";
+
+            arr.forEach((n, i) => {
+                const b = document.createElement("button");
+                b.className = "starBtn";
+                b.innerHTML = `<span class="star">★</span><span class="num">${n}</span>`;
+
+                // keep disabled state after vote
+                b.disabled = voteLocked;
+
+                b.onclick = () => {
+                    if (voteLocked) return;
+                    voteLocked = true;
+
+                    send({ type: "choice", index: i });
+
+                    // disable all for visual feedback
+                    c.querySelectorAll("button").forEach(x => x.disabled = true);
+                };
+
+                c.appendChild(b);
+            });
+        }
+
+        /* ========= Button Handlers ========= */
+        document.getElementById("joinBtn").onclick = (e) => {
+            send({ type: "join", name: nameInput.value });
+            disableOnce(e.currentTarget);
+        };
+
+        document.getElementById("startBtn").onclick = (e) => {
+            send({ type: "start" });
+            disableOnce(e.currentTarget);
+        };
+
+        document.getElementById("sendPromptBtn").onclick = (e) => {
+            send({ type: "input", a: blankAInput.value, b: blankBInput.value });
+            disableOnce(e.currentTarget);
+        };
+
+        document.getElementById("sendReviewBtn").onclick = (e) => {
+            send({ type: "input", text: reviewInput.value });
+            disableOnce(e.currentTarget);
+        };
+
+        document.getElementById("newRoundBtn").onclick = (e) => {
+            // double safety
+            clearPromptInputs();
+            clearReviewInput();
+            send({ type: "newRound" });
+            disableOnce(e.currentTarget);
+        };
+
+        document.getElementById("reconnectBtn").dataset.allowMulti = "1";
+        document.getElementById("reconnectBtn").onclick = connect;
+
+        // window.onload = connect;
+    </script>
 
 </body>
 </html>
