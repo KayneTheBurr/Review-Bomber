@@ -506,6 +506,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
+--- !u!114 &452581391 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3694012045212488523, guid: b0a460dad1aeac04c862fa7cbecb1b28, type: 3}
+  m_PrefabInstance: {fileID: 452581389}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
 --- !u!114 &468835994 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4544632819572195370, guid: 994c32805920d9245895897d00e3e413, type: 3}
@@ -2178,6 +2189,10 @@ PrefabInstance:
       propertyPath: finalReview
       value: 
       objectReference: {fileID: 468835994}
+    - target: {fileID: 2503287989663052145, guid: 0222e62210192c74784291e76c8da69e, type: 3}
+      propertyPath: prompt_theme
+      value: 
+      objectReference: {fileID: 452581391}
     - target: {fileID: 2503287989663052145, guid: 0222e62210192c74784291e76c8da69e, type: 3}
       propertyPath: firstPlaceScore
       value: 
