@@ -526,8 +526,8 @@ public class StageManagerServer : MonoBehaviour
     {
         var ui = UIManager.instance;
 
-        if (ui.finalPrompt != null) ui.finalPrompt.text = GetCurrentEntryTagline();
-        if (ui.finalReview != null) ui.finalReview.text = GetCurrentEntryReview();
+        if (ui.finalPrompt != null) ui.finalPrompt.text = GetCurrentEntryTaglineWithAuthor();
+        if (ui.finalReview != null) ui.finalReview.text = GetCurrentEntryReviewWithAuthor();
 
         // If you want the star image to show *average so far* for the current entry:
         if (ui.starImage != null && entries != null && currentEntryIndex >= 0 && currentEntryIndex < entries.Count)
@@ -585,8 +585,10 @@ public class StageManagerServer : MonoBehaviour
         }
 
         var e = ranked[idx];
-        if (promptText != null) promptText.text = e.promptFinal ?? "";
-        if (reviewText != null) reviewText.text = e.reviewText ?? "";
+        string promptName = string.IsNullOrEmpty(e.playerName) ? "?" : e.playerName;
+        string reviewName = string.IsNullOrEmpty(e.reviewerName) ? "?" : e.reviewerName;
+        if (promptText != null) promptText.text = "[" + promptName + "]" + (e.promptFinal ?? "");
+        if (reviewText != null) reviewText.text = "[" + reviewName + "]" + (e.reviewText ?? "");
         if (scoreText != null) scoreText.text = e.AverageStars.ToString("0.00");
 
         if (starImg != null && UIManager.instance != null)
@@ -984,8 +986,8 @@ public class StageManagerServer : MonoBehaviour
             // Vote display data
             entryIndex = currentEntryIndex,
             entryCount = entries != null ? entries.Count : 0,
-            currentTagline = GetCurrentEntryTagline(),
-            currentReview = GetCurrentEntryReview(),
+            currentTagline = GetCurrentEntryTaglineWithAuthor(),
+            currentReview = GetCurrentEntryReviewWithAuthor(),
             currentReviewRating = GetCurrentEntryRatingLabel(),
 
             // Buttons (ints) for Vote phase only
@@ -1052,6 +1054,26 @@ public class StageManagerServer : MonoBehaviour
         if (entries == null || entries.Count == 0) return "";
         if (currentEntryIndex < 0 || currentEntryIndex >= entries.Count) return "";
         return entries[currentEntryIndex].reviewText;
+    }
+
+    /// <summary>打分/结果展示用：带作者名的 tagline，格式[名字]内容</summary>
+    string GetCurrentEntryTaglineWithAuthor()
+    {
+        if (entries == null || entries.Count == 0) return "";
+        if (currentEntryIndex < 0 || currentEntryIndex >= entries.Count) return "";
+        var e = entries[currentEntryIndex];
+        string name = string.IsNullOrEmpty(e.playerName) ? "?" : e.playerName;
+        return "[" + name + "]" + (e.promptFinal ?? "");
+    }
+
+    /// <summary>打分/结果展示用：带作者名的 review，格式[名字]内容</summary>
+    string GetCurrentEntryReviewWithAuthor()
+    {
+        if (entries == null || entries.Count == 0) return "";
+        if (currentEntryIndex < 0 || currentEntryIndex >= entries.Count) return "";
+        var e = entries[currentEntryIndex];
+        string name = string.IsNullOrEmpty(e.reviewerName) ? "?" : e.reviewerName;
+        return "[" + name + "]" + (e.reviewText ?? "");
     }
 
     string GetCurrentEntryRatingLabel()
