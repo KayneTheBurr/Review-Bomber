@@ -1082,6 +1082,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+--- !u!1 &1016281067 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3031353137791709414, guid: e1432ad427cb03648bbd591cdd731f41, type: 3}
+  m_PrefabInstance: {fileID: 862831262}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1027214733
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1807,6 +1812,10 @@ PrefabInstance:
       propertyPath: resultUI
       value: 
       objectReference: {fileID: 102016036}
+    - target: {fileID: 2503287989663052145, guid: 0222e62210192c74784291e76c8da69e, type: 3}
+      propertyPath: reviewUI
+      value: 
+      objectReference: {fileID: 1016281067}
     - target: {fileID: 2503287989663052145, guid: 0222e62210192c74784291e76c8da69e, type: 3}
       propertyPath: starImage
       value: 

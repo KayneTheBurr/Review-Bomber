@@ -10,6 +10,7 @@ public class UIManager : MonoBehaviour
     public GameObject lobbyUI;
     public GameObject themeUI;
     public GameObject promptUI;
+    public GameObject reviewUI;
     public GameObject voteUI;
     public GameObject resultUI;
     public GameObject tutorialUI;
@@ -91,7 +92,7 @@ public class UIManager : MonoBehaviour
             case "Tutorial": if (tutorialUI) tutorialUI.SetActive(true); break;
             case "Theme": if (themeUI) themeUI.SetActive(true); break;
             case "Prompt": if (promptUI) promptUI.SetActive(true); break;
-            case "Review":
+            case "Review": if(reviewUI) reviewUI.SetActive(true); break;
             case "Vote": if (voteUI) voteUI.SetActive(true); break;
             case "Results": if (resultUI) resultUI.SetActive(true); break;
             default: if (lobbyUI) lobbyUI.SetActive(true); break;
