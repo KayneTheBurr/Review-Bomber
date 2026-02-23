@@ -628,6 +628,16 @@
                     const sceneChanged = (state.scene !== lastScene);
                     lastScene = state.scene;
                     const msg = state.prompt || "";
+                  
+                    if (state.scene !== "Vote") {
+                        voteLocked = false;
+                        lastVoteEntryIndex = -1;
+                    }
+
+                    if (sceneChanged && state.scene === "Vote") {
+                        voteLocked = false;
+                        lastVoteEntryIndex = -1;
+                    }
 
                     document.getElementById("startBtn").style.display =
                         state.isFirst && (state.scene === "Lobby" || state.scene === "Wait")
