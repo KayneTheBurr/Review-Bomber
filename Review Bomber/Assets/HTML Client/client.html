@@ -532,6 +532,7 @@
         <script>
             let ws;
             let currentScreenId = null;
+            let lastScene = null;
             let voteLocked = false;
             let lastVoteEntryIndex = -1;
             let lastServerMessageAt = null;
@@ -624,6 +625,8 @@
                 ws.onmessage = (event) => {
                     lastServerMessageAt = new Date();
                     const state = JSON.parse(event.data);
+                    const sceneChanged = (state.scene !== lastScene);
+                    lastScene = state.scene;
                     const msg = state.prompt || "";
 
                     document.getElementById("startBtn").style.display =
@@ -642,13 +645,13 @@
                         case "Prompt":
                             showScreen("screenPrompt", msg);
                             document.getElementById("taglineTemplateText").innerText = state.taglineTemplate || "";
-                            clearPromptInputs(); // prevent previous round text sticking
+                            if (sceneChanged) clearPromptInputs();   
                             break;
 
                         case "Review":
                             showScreen("screenReview", msg);
                             document.getElementById("assignedTaglineText").innerText = state.assignedTagline || "";
-                            clearReviewInput(); // prevent previous round text sticking
+                            if (sceneChanged) clearReviewInput();    
                             break;
 
                         case "Vote":
