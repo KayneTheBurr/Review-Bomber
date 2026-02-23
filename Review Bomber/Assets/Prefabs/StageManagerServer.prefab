@@ -44,16 +44,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2111fe3d79dbd29429d1b240acacc851, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  address: 127.0.0.1
-  port: 8080
-  onOpen:
-    m_PersistentCalls:
-      m_Calls: []
-  onMessage:
-    m_PersistentCalls:
-      m_Calls: []
-  onClose:
-    m_PersistentCalls:
-      m_Calls: []
-  currentState: 0
-  currentPrompt: Type a line of dialogue.
+  listenAddress: 0.0.0.0
+  port: 8000
+  themePrompts: []
+  theme: Review Bomber
+  themeDurationSeconds: 10
+  connectedClients: []
+  updateUnityHostUI: 1
+  prompt: Dont let your {A} ever cause {B} again!
+  countDownSource: {fileID: 0}
+  sfxSource: {fileID: 0}
+  playerJoinSFXList: []
+  stateChangeSFX: {fileID: 0}
+  resultStateSFX: {fileID: 0}
+  countDownSFX: {fileID: 0}
+  starButtons: 0100000002000000030000000400000005000000

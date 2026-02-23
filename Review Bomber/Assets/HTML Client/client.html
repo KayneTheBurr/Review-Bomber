@@ -4,130 +4,337 @@
     <meta charset="UTF-8">
     <title>Review Bomber Client</title>
     <style>
+        :root {
+
+            --bg: #dbe8ff; 
+            --bg2: #dbe8ff; 
+            --ink: #0b1b33;
+            --muted: #5b6d86;
+            --panel: #ffffff;
+            --panel2: #f7fbff;
+            --line: #cfe0f5;
+            --line2: #b8d2f2;
+            --blue: #1e66ff;
+            --blue2: #0b57d0;
+            --cyan: #22d3ee;
+            --warn: #ffb020;
+            --bad: #ef4444;
+            --ok: #22c55e;
+            --shadow: 0 10px 24px rgba(9, 38, 84, .10);
+            --shadow2: 0 6px 16px rgba(9, 38, 84, .08);
+            --maxW: 980px;
+            --radius: 0px; 
+            --pad: 14px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
         body {
-            font-family: sans-serif;
-            padding: 20px;
+            margin: 0;
+            padding: 18px 14px 44px;
+            color: var(--ink);
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans";
+            background: var(--bg);
+            overflow-x: hidden;
         }
 
-        .screen {
-            display: none;
-            margin-bottom: 15px;
+        /* ===== Layout shell ===== */
+        .appShell {
+            max-width: var(--maxW);
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
-        button {
-            margin: 5px;
+        /* ===== Title Container ===== */
+        .heroTitle {
+            position: relative;
+            padding: 18px 14px;
+            background: var(--panel);
+            border: 2px solid var(--line2);
+            box-shadow: var(--shadow2);
         }
 
-        textarea {
-            width: 100%;
-            height: 140px;
+            .heroTitle::before {
+                content: "";
+                position: absolute;
+                left: -2px;
+                top: -2px;
+                width: 86px;
+                height: 86px;
+                background: linear-gradient(135deg, rgba(30,102,255,.18), rgba(34,211,238,.18));
+                border-right: 2px solid var(--line2);
+                border-bottom: 2px solid var(--line2);
+                clip-path: polygon(0 0, 100% 0, 0 100%);
+            }
+
+            .heroTitle::after {
+                content: "HOT";
+                position: absolute;
+                right: 10px;
+                top: 10px;
+                padding: 6px 10px;
+                font-weight: 900;
+                letter-spacing: 1px;
+                font-size: 12px;
+                color: #1b0b00;
+                border: 2px solid var(--line2);
+                background: linear-gradient( 120deg, #fff7b2 0%, #ffd700 25%, #ffcc33 45%, #ffd700 65%, #fff3a0 100% );
+                background-size: 300% 100%;
+                animation: goldFlow 3.5s ease-in-out infinite;
+                box-shadow: 0 4px 12px rgba(255, 215, 0, 0.25);
+            }
+
+        /* ===== 标题文字 ===== */
+        h1 {
+            margin: 0;
+            text-align: center;
+            font-size: clamp(34px, 5vw, 54px);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            line-height: 1.1;
+            font-family: Impact, Haettenschweiler, "Arial Black", "Franklin Gothic Heavy", "Bahnschrift", "DIN Condensed", system-ui, sans-serif;
+            font-weight: 900;
+            background: linear-gradient(180deg, var(--blue), var(--blue2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 6px rgba(9,38,84,.15);
         }
 
-        .small {
-            font-size: 0.9em;
-            opacity: 0.85;
+        @keyframes titlePulse {
+            0% {
+                transform: scale(1);
+                filter: brightness(1);
+            }
+
+            50% {
+                transform: scale(1.045);
+                filter: brightness(1.06);
+            }
+
+            100% {
+                transform: scale(1);
+                filter: brightness(1);
+            }
         }
 
-        .box {
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 10px;
+        .subtitle {
+            margin: 8px 0 0;
+            text-align: center;
+            font-size: 13px;
+            color: var(--muted);
+            letter-spacing: .6px;
         }
 
-        /* Connection status indicator */
+        /* ===== Status Bar (连接条) ===== */
         .statusBar {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin: 10px 0 18px;
-            padding: 8px 10px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
+            justify-content: space-between;
+            gap: 12px;
             flex-wrap: wrap;
+            padding: 12px 12px;
+            background: var(--panel);
+            border: 2px solid var(--line2);
+            box-shadow: var(--shadow2);
         }
 
         .dot {
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
             border-radius: 999px;
-            background: #999;
-            display: inline-block;
+            background: #94a3b8;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 0 2px rgba(184,210,242,.9);
         }
 
             .dot.ok {
-                background: #2aa745;
+                background: var(--ok);
             }
 
             .dot.bad {
-                background: #d64545;
+                background: var(--bad);
             }
 
             .dot.warn {
-                background: #d0a400;
+                background: var(--warn);
             }
+
+        label {
+            display: block;
+            margin: 6px 0 6px;
+            color: var(--muted);
+            font-size: 12px;
+            letter-spacing: .5px;
+            text-transform: uppercase;
+        }
+
+        .small {
+            font-size: 12px;
+            color: var(--muted);
+        }
 
         .mono {
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
         }
 
-        .grow {
-            flex: 1;
+        input, textarea {
+            width: 100%;
+            max-width: 760px;
+            padding: 10px 12px;
+            background: var(--panel2);
+            border: 2px solid var(--line2);
+            color: var(--ink);
+            outline: none;
+            box-shadow: none;
         }
+
+            input:focus, textarea:focus {
+                border-color: rgba(30,102,255,.55);
+            }
+
+            input.serverInput {
+                max-width: 190px;
+            }
+
+        textarea {
+            height: 120px; 
+            max-height: 180px;
+            resize: vertical;
+            line-height: 1.35;
+        }
+
+        /* ===== Screens (每个阶段面板) ===== */
+        .screen {
+            display: none;
+            width: 100%;
+            padding: var(--pad);
+            background: var(--panel);
+            border: 2px solid var(--line2);
+            box-shadow: var(--shadow2);
+            position: relative;
+            max-height: calc(100vh - 250px);
+            overflow: auto;
+        }
+
+        /* ===== SceneState：顶部“徽章条” ===== */
+        div[id^="sceneState"] {
+            margin: 0 0 12px;
+            padding: 10px 12px;
+            background: linear-gradient(90deg, rgba(30,102,255,.12), rgba(34,211,238,.12));
+            border: 2px solid var(--line2);
+            color: #0b1b33;
+            font-weight: 800;
+            letter-spacing: .6px;
+            text-transform: uppercase;
+            position: relative;
+        }
+
+            div[id^="sceneState"]::after {
+                content: "STATUS";
+                position: absolute;
+                right: 10px;
+                top: -10px;
+                padding: 4px 8px;
+                font-size: 11px;
+                font-weight: 900;
+                background: #ffffff;
+                border: 2px solid var(--line2);
+                color: var(--muted);
+            }
+
+        /* ===== Amazon-ish 评论块：方框 + 角落切角 ===== */
+        .box {
+            margin: 12px 0 14px;
+            padding: 12px 12px;
+            background: #ffffff;
+            border: 2px solid var(--line2);
+            box-shadow: var(--shadow2);
+            position: relative;
+        }
+
+            .box::before {
+                content: "";
+                position: absolute;
+                left: -2px;
+                top: -2px;
+                width: 58px;
+                height: 58px;
+                background: linear-gradient(135deg, rgba(30,102,255,.18), rgba(34,211,238,.18));
+                border-right: 2px solid var(--line2);
+                border-bottom: 2px solid var(--line2);
+                clip-path: polygon(0 0, 100% 0, 0 100%);
+            }
+
+            .box::after {
+                content: "REVIEW";
+                position: absolute;
+                left: 10px;
+                top: -10px;
+                padding: 4px 8px;
+                font-size: 11px;
+                font-weight: 900;
+                background: #ffffff;
+                border: 2px solid var(--line2);
+                color: var(--muted);
+                letter-spacing: .6px;
+            }
+
+        hr {
+            border: none;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(184,210,242,1), transparent);
+            margin: 12px 0;
+        }
+
+        /* ===== Buttons：蓝底、清晰边框 ===== */
+        button {
+            margin: 8px 8px 0 0;
+            padding: 10px 14px;
+            border: 2px solid rgba(11,87,208,.35);
+            background: linear-gradient(180deg, var(--blue), var(--blue2));
+            color: #ffffff;
+            font-weight: 800;
+            letter-spacing: .4px;
+            cursor: pointer;
+            box-shadow: 0 6px 14px rgba(9, 38, 84, .16);
+            user-select: none;
+        }
+
+            button:hover {
+                filter: brightness(1.06);
+            }
+
+            button:active {
+                transform: translateY(1px);
+            }
+
+            button:disabled {
+                opacity: .55;
+                cursor: not-allowed;
+                filter: grayscale(.2);
+                transform: none;
+            }
 
         .smallBtn {
-            padding: 6px 10px;
-            font-size: 0.9em;
+            padding: 10px 12px;
+            font-size: 13px;
         }
 
-        input.serverInput {
-            width: 140px;
-            padding: 4px;
-        }
-
-        button:disabled {
-            opacity: 0.45;
-            cursor: not-allowed;
-            filter: grayscale(1);
-        }
-
-        /* ===== Results New Round button (NOT fixed; sits under results) ===== */
-        .resultsButtonContainer {
-            margin-top: 26px;
-            margin-bottom: 18px;
-            display: flex;
-            justify-content: center;
-        }
-
-        #newRoundBtn {
-            padding: 14px 28px;
-            font-size: 1.2em;
-            border-radius: 12px;
-            border: 2px solid #222;
-            background: #f6f6f6;
-            cursor: pointer;
-            transform: translateY(0);
-            transition: transform 120ms ease, box-shadow 120ms ease;
-            box-shadow: 0 2px 0 rgba(0,0,0,0.25);
-        }
-
-            #newRoundBtn:not(:disabled):hover {
-                transform: translateY(-1px);
-                box-shadow: 0 3px 0 rgba(0,0,0,0.28);
-            }
-
-            #newRoundBtn:not(:disabled):active {
-                transform: translateY(1px);
-                box-shadow: 0 1px 0 rgba(0,0,0,0.22);
-            }
-
-        /* ===== Vote buttons: fancy star pills (layout, no overlap) ===== */
+        /* ===== Voting area ===== */
         #voteButtonsContainer {
-            margin-top: 18px;
-            padding: 14px 12px;
-            border: 1px solid #ddd;
-            border-radius: 14px;
-            background: #fafafa;
+            margin-top: 14px;
+            padding: 12px 12px;
+            background: #ffffff;
+            border: 2px solid var(--line2);
+            box-shadow: var(--shadow2);
         }
 
         #voteButtonsHeader {
@@ -139,386 +346,401 @@
         }
 
             #voteButtonsHeader b {
-                font-size: 1.05em;
+                letter-spacing: .6px;
+                text-transform: uppercase;
             }
-
-        #voteHint {
-            opacity: 0.75;
-            font-size: 0.9em;
-        }
 
         #voteButtons {
             display: grid;
-            grid-template-columns: repeat(5, minmax(0, 1fr));
+            grid-template-columns: repeat(5, minmax(0,1fr));
             gap: 10px;
+        }
+
+        @media (max-width: 520px) {
+            #voteButtons {
+                grid-template-columns: repeat(3, minmax(0,1fr));
+            }
         }
 
         .starBtn {
             padding: 12px 10px;
-            border-radius: 14px;
-            border: 2px solid #222;
-            background: linear-gradient(180deg, #ffffff, #f2f2f2);
-            box-shadow: 0 3px 0 rgba(0,0,0,0.25);
-            cursor: pointer;
-            font-size: 1.05em;
-            line-height: 1;
+            border: 2px solid rgba(11,87,208,.35);
+            background: linear-gradient(180deg, #1e66ff, #0b57d0);
+            color: #ffffff;
+            font-weight: 900;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            user-select: none;
-            transform: translateY(0);
-            transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+            box-shadow: 0 6px 14px rgba(9, 38, 84, .16);
         }
 
+            .starBtn .stars {
+                color: #ffd400;
+                text-shadow: none;
+                font-size: 18px;
+                line-height: 1;
+            }
+
             .starBtn .num {
-                font-weight: 700;
+                font-size: 15px;
+                line-height: 1;
             }
 
-            .starBtn .star {
-                font-size: 1.1em;
+        .resultsButtonContainer {
+            margin-top: 16px;
+            display: flex;
+            justify-content: center;
+        }
+
+        #newRoundBtn {
+            padding: 12px 20px;
+        }
+
+        pre {
+            background: #f7fbff;
+            border: 2px solid var(--line2);
+            padding: 10px 12px;
+            box-shadow: none;
+        }
+
+        @keyframes goldFlow {
+            0% {
+                background-position: 0% 50%;
             }
 
-            .starBtn:not(:disabled):hover {
-                transform: translateY(-1px);
-                box-shadow: 0 4px 0 rgba(0,0,0,0.28);
-                filter: brightness(1.02);
+            50% {
+                background-position: 100% 50%;
             }
 
-            .starBtn:not(:disabled):active {
-                transform: translateY(1px);
-                box-shadow: 0 2px 0 rgba(0,0,0,0.22);
-            }
-
-        /* Mobile-ish fallback if narrow */
-        @media (max-width: 520px) {
-            #voteButtons {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
+            100% {
+                background-position: 0% 50%;
             }
         }
     </style>
 </head>
 <body>
-
-    <h1>Review Bomber (Client)</h1>
-
-    <!-- Connection Status -->
-    <div class="statusBar">
-        <span id="connDot" class="dot warn"></span>
-
-        <div>
-            <label class="small">Server IP</label><br>
-            <input id="serverIpInput" class="serverInput" placeholder="127.0.0.1">
+    <div class="appShell">
+        <div class="heroTitle">
+            <h1>Review Bomber</h1>
         </div>
+        <div class="subtitle">NEON ARCADE EDITION • taglines • reviews • votes</div>
 
-        <div>
-            <label class="small">Port</label><br>
-            <input id="serverPortInput" class="serverInput" placeholder="8080">
-        </div>
+        <!-- Connection Status -->
+        <div class="statusBar">
+            <span id="connDot" class="dot warn"></span>
 
-        <div class="grow">
-            <div><b>Status:</b> <span id="connLabel">Not connected</span></div>
-            <div class="small mono" id="connDetail"></div>
-        </div>
-
-        <button id="reconnectBtn" class="smallBtn">Connect</button>
-    </div>
-
-    <!-- LOBBY -->
-    <div id="screenLobby" class="screen">
-        <div id="sceneStateLobby" style="margin-bottom:15px;"></div>
-        <label>Your Name:</label>
-        <input type="text" id="nameInput" autocomplete="off">
-        <button id="joinBtn">Join</button>
-        <button id="startBtn" style="display:none;">Start Game</button>
-    </div>
-
-    <!-- PROMPT -->
-    <div id="screenPrompt" class="screen">
-        <div id="sceneStatePrompt" style="margin-bottom:15px;"></div>
-
-        <div class="box">
-            <div class="small">Tagline Template:</div>
-            <div id="taglineTemplateText"></div>
-        </div>
-
-        <label>Blank A:</label>
-        <input type="text" id="blankAInput" autocomplete="off"><br><br>
-
-        <label>Blank B:</label>
-        <input type="text" id="blankBInput" autocomplete="off"><br><br>
-
-        <button id="sendPromptBtn">Submit Tagline</button>
-    </div>
-
-    <!-- REVIEW -->
-    <div id="screenReview" class="screen">
-        <div id="sceneStateReview" style="margin-bottom:15px;"></div>
-
-        <div class="box">
-            <div class="small">You are reviewing this tagline:</div>
-            <div id="assignedTaglineText"></div>
-        </div>
-
-        <!-- ✅ Removed: required tone box -->
-
-        <label>Your Review:</label>
-        <textarea id="reviewInput" autocomplete="off"></textarea><br>
-        <button id="sendReviewBtn">Submit Review</button>
-    </div>
-
-    <!-- VOTE -->
-    <div id="screenVote" class="screen">
-        <div id="sceneStateVote" style="margin-bottom:15px;"></div>
-
-        <div class="box">
-            <div class="small">Now rating entry <span id="voteIndex"></span> / <span id="voteCount"></span></div>
-            <div class="small">Tagline:</div>
-            <div id="currentTaglineText"></div>
-            <hr>
-            <div class="small">Review:</div>
-            <div id="currentReviewText"></div>
-        </div>
-
-        <!-- ✅ Vote buttons in normal flow (no overlap, fancy UI) -->
-        <div id="voteButtonsContainer">
-            <div id="voteButtonsHeader">
-                <b>Rate this entry</b>
-                <div id="voteHint" class="small">Tap once to lock in</div>
+            <div>
+                <label class="small">Server IP</label><br>
+                <input id="serverIpInput" class="serverInput" placeholder="127.0.0.1">
             </div>
-            <div id="voteButtons"></div>
+
+            <div>
+                <label class="small">Port</label><br>
+                <input id="serverPortInput" class="serverInput" placeholder="8080">
+            </div>
+
+            <div class="grow">
+                <div><b>Status:</b> <span id="connLabel">Not connected</span></div>
+                <div class="small mono" id="connDetail"></div>
+            </div>
+
+            <button id="reconnectBtn" class="smallBtn">Connect</button>
         </div>
-    </div>
 
-    <!-- RESULTS -->
-    <div id="screenResults" class="screen">
-        <div id="sceneStateResults" style="margin-bottom:15px;"></div>
-        <div class="box">
-            <div class="small">Top Results:</div>
-            <pre id="resultsText" style="white-space:pre-wrap;"></pre>
+        <!-- LOBBY -->
+        <div id="screenLobby" class="screen">
+            <div id="sceneStateLobby" style="margin-bottom:15px;"></div>
+            <label>Your Name:</label>
+            <input type="text" id="nameInput" autocomplete="off">
+            <button id="joinBtn">Join</button>
+            <button id="startBtn" style="display:none;">Start Game</button>
         </div>
 
-        <!-- ✅ Button under results (no fixed) -->
-        <div class="resultsButtonContainer">
-            <button id="newRoundBtn" style="display:none;">Start New Round</button>
+        <!-- PROMPT -->
+        <div id="screenPrompt" class="screen">
+            <div id="sceneStatePrompt" style="margin-bottom:15px;"></div>
+
+            <div class="box">
+                <div class="small">Tagline Template:</div>
+                <div id="taglineTemplateText"></div>
+            </div>
+
+            <label>Blank A:</label>
+            <input type="text" id="blankAInput" autocomplete="off"><br><br>
+
+            <label>Blank B:</label>
+            <input type="text" id="blankBInput" autocomplete="off"><br><br>
+
+            <button id="sendPromptBtn">Submit Tagline</button>
         </div>
-    </div>
 
-    <script>
-        let ws;
-        let currentScreenId = null;
-        let voteLocked = false;
-        let lastVoteEntryIndex = -1;
-        let lastServerMessageAt = null;
+        <!-- REVIEW -->
+        <div id="screenReview" class="screen">
+            <div id="sceneStateReview" style="margin-bottom:15px;"></div>
 
-        /* ========= UI Helpers ========= */
-        function disableOnce(btn) {
-            if (!btn) return;
-            if (btn.dataset.allowMulti === "1") return; // Connect can be clicked multiple times
-            btn.disabled = true;
-        }
+            <div class="box">
+                <div class="small">You are reviewing this tagline:</div>
+                <div id="assignedTaglineText"></div>
+            </div>
 
-        function resetButtonsInScreen(screenEl) {
-            if (!screenEl) return;
-            screenEl.querySelectorAll("button").forEach(b => {
-                if (b.dataset.allowMulti === "1") return;
-                b.disabled = false;
-            });
-        }
+            <label>Your Review:</label>
+            <textarea id="reviewInput" autocomplete="off"></textarea><br>
+            <button id="sendReviewBtn">Submit Review</button>
+        </div>
 
-        function showScreen(id, msg) {
-            document.querySelectorAll(".screen").forEach(s => s.style.display = "none");
-            const el = document.getElementById(id);
-            el.style.display = "block";
+        <!-- VOTE -->
+        <div id="screenVote" class="screen">
+            <div id="sceneStateVote" style="margin-bottom:15px;"></div>
 
-            if (id !== currentScreenId) {
-                resetButtonsInScreen(el);
-                currentScreenId = id;
+            <div class="box">
+                <div class="small">Now rating entry <span id="voteIndex"></span> / <span id="voteCount"></span></div>
+                <div class="small">Tagline:</div>
+                <div id="currentTaglineText"></div>
+                <hr>
+                <div class="small">Review:</div>
+                <div id="currentReviewText"></div>
+            </div>
+
+            <div id="voteButtonsContainer">
+                <div id="voteButtonsHeader">
+                    <b>Rate this entry</b>
+                    <div id="voteHint" class="small">Tap once to lock in</div>
+                </div>
+                <div id="voteButtons"></div>
+            </div>
+        </div>
+
+        <!-- RESULTS -->
+        <div id="screenResults" class="screen">
+            <div id="sceneStateResults" style="margin-bottom:15px;"></div>
+            <div class="box">
+                <div class="small">Top Results:</div>
+                <pre id="resultsText" style="white-space:pre-wrap;"></pre>
+            </div>
+
+            <div class="resultsButtonContainer">
+                <button id="newRoundBtn" style="display:none;">Start New Round</button>
+            </div>
+        </div>
+
+        <script>
+            let ws;
+            let currentScreenId = null;
+            let voteLocked = false;
+            let lastVoteEntryIndex = -1;
+            let lastServerMessageAt = null;
+
+            /* ========= UI Helpers ========= */
+            function disableOnce(btn) {
+                if (!btn) return;
+                if (btn.dataset.allowMulti === "1") return; // Connect can be clicked multiple times
+                btn.disabled = true;
             }
 
-            const scene = el.querySelector("div[id^='sceneState']");
-            if (scene) scene.innerText = msg;
-        }
+            function resetButtonsInScreen(screenEl) {
+                if (!screenEl) return;
+                screenEl.querySelectorAll("button").forEach(b => {
+                    if (b.dataset.allowMulti === "1") return;
+                    b.disabled = false;
+                });
+            }
 
-        function clearPromptInputs() {
-            const a = document.getElementById("blankAInput");
-            const b = document.getElementById("blankBInput");
-            if (a) a.value = "";
-            if (b) b.value = "";
-        }
+            function showScreen(id, msg) {
+                document.querySelectorAll(".screen").forEach(s => s.style.display = "none");
+                const el = document.getElementById(id);
+                el.style.display = "block";
 
-        function clearReviewInput() {
-            const t = document.getElementById("reviewInput");
-            if (t) t.value = "";
-        }
-
-        /* ========= Connection ========= */
-        const ipInput = document.getElementById("serverIpInput");
-        const portInput = document.getElementById("serverPortInput");
-
-        ipInput.value = localStorage.getItem("rb_server_ip") || "127.0.0.1";
-        portInput.value = localStorage.getItem("rb_server_port") || "8080";
-
-        function getWSUrl() {
-            const ip = ipInput.value.trim();
-            const port = portInput.value.trim();
-            return `ws://${ip}:${port}`;
-        }
-
-        function setConnStatus(state, label, detail) {
-            const dot = document.getElementById("connDot");
-            dot.className = `dot ${state}`;
-            document.getElementById("connLabel").textContent = label;
-            document.getElementById("connDetail").textContent = detail;
-        }
-
-        function connect() {
-            try { ws?.close(); } catch { }
-
-            const url = getWSUrl();
-            localStorage.setItem("rb_server_ip", ipInput.value);
-            localStorage.setItem("rb_server_port", portInput.value);
-
-            setConnStatus("warn", "Connecting…", url);
-
-            ws = new WebSocket(url);
-
-            ws.onopen = () => {
-                setConnStatus("ok", "Connected", url);
-                showScreen("screenLobby", "Connected. Waiting for server state…");
-            };
-
-            ws.onerror = () => {
-                setConnStatus("bad", "Connection error", url);
-            };
-
-            ws.onclose = () => {
-                setConnStatus("bad", "Disconnected", url);
-            };
-
-            ws.onmessage = (event) => {
-                lastServerMessageAt = new Date();
-                const state = JSON.parse(event.data);
-                const msg = state.prompt || "";
-
-                document.getElementById("startBtn").style.display =
-                    state.isFirst && (state.scene === "Lobby" || state.scene === "Wait")
-                        ? "inline" : "none";
-
-                document.getElementById("newRoundBtn").style.display =
-                    state.isFirst && (state.scene === "Results")
-                        ? "inline" : "none";
-
-                switch (state.scene) {
-                    case "Lobby":
-                        showScreen("screenLobby", msg);
-                        break;
-
-                    case "Prompt":
-                        showScreen("screenPrompt", msg);
-                        document.getElementById("taglineTemplateText").innerText = state.taglineTemplate || "";
-                        clearPromptInputs(); // prevent previous round text sticking
-                        break;
-
-                    case "Review":
-                        showScreen("screenReview", msg);
-                        document.getElementById("assignedTaglineText").innerText = state.assignedTagline || "";
-                        clearReviewInput(); // prevent previous round text sticking
-                        break;
-
-                    case "Vote":
-                        if (state.entryIndex !== lastVoteEntryIndex) {
-                            voteLocked = false;
-                            lastVoteEntryIndex = state.entryIndex;
-                        }
-
-                        showScreen("screenVote", msg);
-                        document.getElementById("voteIndex").innerText = state.entryIndex + 1;
-                        document.getElementById("voteCount").innerText = state.entryCount;
-                        document.getElementById("currentTaglineText").innerText = state.currentTagline;
-                        document.getElementById("currentReviewText").innerText = state.currentReview;
-
-                        buildStarButtons(state.starButtons || [1, 2, 3, 4, 5]);
-                        break;
-
-                    case "Results":
-                        showScreen("screenResults", msg);
-                        document.getElementById("resultsText").innerText = state.resultsText || "";
-                        // optional double-safety:
-                        clearPromptInputs();
-                        clearReviewInput();
-                        break;
+                if (id !== currentScreenId) {
+                    resetButtonsInScreen(el);
+                    currentScreenId = id;
                 }
-            };
-        }
 
-        function send(obj) {
-            if (ws?.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify(obj));
+                const scene = el.querySelector("div[id^='sceneState']");
+                if (scene) scene.innerText = msg;
             }
-        }
 
-        /* ========= Vote UI ========= */
-        function buildStarButtons(arr) {
-            const c = document.getElementById("voteButtons");
-            c.innerHTML = "";
+            function clearPromptInputs() {
+                const a = document.getElementById("blankAInput");
+                const b = document.getElementById("blankBInput");
+                if (a) a.value = "";
+                if (b) b.value = "";
+            }
 
-            arr.forEach((n, i) => {
-                const b = document.createElement("button");
-                b.className = "starBtn";
-                b.innerHTML = `<span class="star">★</span><span class="num">${n}</span>`;
+            function clearReviewInput() {
+                const t = document.getElementById("reviewInput");
+                if (t) t.value = "";
+            }
 
-                // keep disabled state after vote
-                b.disabled = voteLocked;
+            /* ========= Connection ========= */
+            const ipInput = document.getElementById("serverIpInput");
+            const portInput = document.getElementById("serverPortInput");
 
-                b.onclick = () => {
-                    if (voteLocked) return;
-                    voteLocked = true;
+            ipInput.value = localStorage.getItem("rb_server_ip") || "127.0.0.1";
+            portInput.value = localStorage.getItem("rb_server_port") || "8080";
 
-                    send({ type: "choice", index: i });
+            function getWSUrl() {
+                const ip = ipInput.value.trim();
+                const port = portInput.value.trim();
+                return `ws://${ip}:${port}`;
+            }
 
-                    // disable all for visual feedback
-                    c.querySelectorAll("button").forEach(x => x.disabled = true);
+            function setConnStatus(state, label, detail) {
+                const dot = document.getElementById("connDot");
+                dot.className = `dot ${state}`;
+                document.getElementById("connLabel").textContent = label;
+                document.getElementById("connDetail").textContent = detail;
+            }
+
+            function connect() {
+                try { ws?.close(); } catch { }
+
+                const url = getWSUrl();
+                localStorage.setItem("rb_server_ip", ipInput.value);
+                localStorage.setItem("rb_server_port", portInput.value);
+
+                setConnStatus("warn", "Connecting…", url);
+
+                ws = new WebSocket(url);
+
+                ws.onopen = () => {
+                    setConnStatus("ok", "Connected", url);
+                    showScreen("screenLobby", "Connected. Waiting for server state…");
                 };
 
-                c.appendChild(b);
-            });
-        }
+                ws.onerror = () => {
+                    setConnStatus("bad", "Connection error", url);
+                };
 
-        /* ========= Button Handlers ========= */
-        document.getElementById("joinBtn").onclick = (e) => {
-            send({ type: "join", name: nameInput.value });
-            disableOnce(e.currentTarget);
-        };
+                ws.onclose = () => {
+                    setConnStatus("bad", "Disconnected", url);
+                };
 
-        document.getElementById("startBtn").onclick = (e) => {
-            send({ type: "start" });
-            disableOnce(e.currentTarget);
-        };
+                ws.onmessage = (event) => {
+                    lastServerMessageAt = new Date();
+                    const state = JSON.parse(event.data);
+                    const msg = state.prompt || "";
 
-        document.getElementById("sendPromptBtn").onclick = (e) => {
-            send({ type: "input", a: blankAInput.value, b: blankBInput.value });
-            disableOnce(e.currentTarget);
-        };
+                    document.getElementById("startBtn").style.display =
+                        state.isFirst && (state.scene === "Lobby" || state.scene === "Wait")
+                            ? "inline" : "none";
 
-        document.getElementById("sendReviewBtn").onclick = (e) => {
-            send({ type: "input", text: reviewInput.value });
-            disableOnce(e.currentTarget);
-        };
+                    document.getElementById("newRoundBtn").style.display =
+                        state.isFirst && (state.scene === "Results")
+                            ? "inline" : "none";
 
-        document.getElementById("newRoundBtn").onclick = (e) => {
-            // double safety
-            clearPromptInputs();
-            clearReviewInput();
-            send({ type: "newRound" });
-            disableOnce(e.currentTarget);
-        };
+                    switch (state.scene) {
+                        case "Lobby":
+                            showScreen("screenLobby", msg);
+                            break;
 
-        document.getElementById("reconnectBtn").dataset.allowMulti = "1";
-        document.getElementById("reconnectBtn").onclick = connect;
+                        case "Prompt":
+                            showScreen("screenPrompt", msg);
+                            document.getElementById("taglineTemplateText").innerText = state.taglineTemplate || "";
+                            clearPromptInputs(); // prevent previous round text sticking
+                            break;
 
-        // window.onload = connect;
-    </script>
+                        case "Review":
+                            showScreen("screenReview", msg);
+                            document.getElementById("assignedTaglineText").innerText = state.assignedTagline || "";
+                            clearReviewInput(); // prevent previous round text sticking
+                            break;
 
+                        case "Vote":
+                            if (state.entryIndex !== lastVoteEntryIndex) {
+                                voteLocked = false;
+                                lastVoteEntryIndex = state.entryIndex;
+                            }
+
+                            showScreen("screenVote", msg);
+                            document.getElementById("voteIndex").innerText = state.entryIndex + 1;
+                            document.getElementById("voteCount").innerText = state.entryCount;
+                            document.getElementById("currentTaglineText").innerText = state.currentTagline;
+                            document.getElementById("currentReviewText").innerText = state.currentReview;
+
+                            buildStarButtons(state.starButtons || [1, 2, 3, 4, 5]);
+                            break;
+
+                        case "Results":
+                            showScreen("screenResults", msg);
+                            document.getElementById("resultsText").innerText = state.resultsText || "";
+                            // optional double-safety:
+                            clearPromptInputs();
+                            clearReviewInput();
+                            break;
+                    }
+                };
+            }
+
+            function send(obj) {
+                if (ws?.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify(obj));
+                }
+            }
+
+            /* ========= Vote UI ========= */
+            function buildStarButtons(arr) {
+                const c = document.getElementById("voteButtons");
+                c.innerHTML = "";
+
+                arr.forEach((n, i) => {
+                    const b = document.createElement("button");
+                    b.className = "starBtn";
+
+                    // 1 -> ★, 2 -> ★★, ...
+                    const stars = "★".repeat(Math.max(1, Number(n) || 1));
+                    b.innerHTML = `<span class="stars">${stars}</span>`;
+
+                    b.disabled = voteLocked;
+
+                    b.onclick = () => {
+                        if (voteLocked) return;
+                        voteLocked = true;
+
+                        send({ type: "choice", index: i });
+
+                        // disable all for visual feedback
+                        c.querySelectorAll("button").forEach(x => x.disabled = true);
+                    };
+
+                    c.appendChild(b);
+                });
+            }
+
+            /* ========= Button Handlers ========= */
+            document.getElementById("joinBtn").onclick = (e) => {
+                send({ type: "join", name: nameInput.value });
+                disableOnce(e.currentTarget);
+            };
+
+            document.getElementById("startBtn").onclick = (e) => {
+                send({ type: "start" });
+                disableOnce(e.currentTarget);
+            };
+
+            document.getElementById("sendPromptBtn").onclick = (e) => {
+                send({ type: "input", a: blankAInput.value, b: blankBInput.value });
+                disableOnce(e.currentTarget);
+            };
+
+            document.getElementById("sendReviewBtn").onclick = (e) => {
+                send({ type: "input", text: reviewInput.value });
+                disableOnce(e.currentTarget);
+            };
+
+            document.getElementById("newRoundBtn").onclick = (e) => {
+                // double safety
+                clearPromptInputs();
+                clearReviewInput();
+                send({ type: "newRound" });
+                disableOnce(e.currentTarget);
+            };
+
+            document.getElementById("reconnectBtn").dataset.allowMulti = "1";
+            document.getElementById("reconnectBtn").onclick = connect;
+
+            // window.onload = connect;
+        </script>
+    </div>
 </body>
 </html>
