@@ -12,6 +12,7 @@ public class UIManager : MonoBehaviour
     public GameObject promptUI;
     public GameObject voteUI;
     public GameObject resultUI;
+    public GameObject tutorialUI;
 
     [Header("Lobby UI Elements")]
     public TMP_Text p1Name;
@@ -65,6 +66,9 @@ public class UIManager : MonoBehaviour
     public Image thirdPlaceStarRank;
     public TMP_Text thirdPlaceScore;
 
+    //[Header("Tutorial UI Elements")]
+    //add the tutorial UI elements here after we make them
+
 
     private void Awake()
     {
@@ -79,13 +83,15 @@ public class UIManager : MonoBehaviour
         if (promptUI) promptUI.SetActive(false);
         if (voteUI) voteUI.SetActive(false);
         if (resultUI) resultUI.SetActive(false);
+        if (tutorialUI) tutorialUI.SetActive(false);
 
         switch (screenName)
         {
             case "Lobby": if (lobbyUI) lobbyUI.SetActive(true); break;
+            case "Tutorial": if (tutorialUI) tutorialUI.SetActive(true); break;
             case "Theme": if (themeUI) themeUI.SetActive(true); break;
             case "Prompt": if (promptUI) promptUI.SetActive(true); break;
-            case "Review":  // you said Review reuses Vote UI
+            case "Review":
             case "Vote": if (voteUI) voteUI.SetActive(true); break;
             case "Results": if (resultUI) resultUI.SetActive(true); break;
             default: if (lobbyUI) lobbyUI.SetActive(true); break;

@@ -2,15 +2,17 @@
 // Review Bomber - minimal LAN party game server (Unity + Fleck)
 //
 // Scenes:
-//   Lobby   -> Prompt  (fill in blanks A/B for tagline)
+//   Lobby   -> Tutorial (timed, one-time per session)
+//          -> Theme
+//          -> Prompt  (fill in blanks A/B for tagline)
 //          -> Review  (write a review for someone else's tagline, with an assigned rating)
 //          -> Vote    (rate each entry 1-5 stars; sequential "Option A")
-//          -> Results -> Wait -> Prompt ...
+//          -> Results -> Wait -> Theme ...
 //
 // Client messages (kept intentionally generic):
 //   { type:"join",  name:"Kaine" }
 //   { type:"start" }
-//   { type:"input", a:"interns", b:"crunch" }     // Prompt scene
+//   { type:"input", a:"interns", b:"crunch" }       // Prompt scene
 //   { type:"input", text:"This ruined my life" }    // Review scene
 //   { type:"choice", index:3 }                      // Vote scene: index 0..4 => stars 1..5
 //
@@ -48,25 +50,34 @@ public class StageManagerServer : MonoBehaviour
     private bool themeTimerRunning = false;
     public float themeDurationSeconds = 10f;
 
+    [Header("Tutorial Settings")]
+    public bool enableTutorial = true;
+    public float tutorialDurationSeconds = 15f;
+
+    // one-time gate so tutorial only happens before the first Theme
+    private bool tutorialHasRun = false;
+
+    private bool tutorialTimerRequested = false;
+    private bool tutorialTimerRunning = false;
+
     [Header("Connected Clients")]
     [SerializeField]
     private List<ConnectedClientDebug> connectedClients = new();
 
     [SerializeField] private bool updateUnityHostUI = true;
     private Fleck.WebSocketServer _server;
+
     // Keep your variable name "prompt" (this is the tagline template)
     // Tip: prefer using {A} and {B} tokens, e.g. "Don't let your {A} ever cause {B} again!"
     public string prompt = "Dont let your {A} ever cause {B} again!";
 
     [Header("Sound Effects")] //SFX related codes will be started from line 570, under UpdateUI Logics
-    public AudioSource countDownSource; //AudioSource for playing countdown SFX in between phases    
+    public AudioSource countDownSource; //AudioSource for playing countdown SFX in between phases
     public AudioSource sfxSource; //AudioSource for playing SFX on the host machine (e.g. player join).
     public List<AudioClip> playerJoinSFXList; //List of SFX for whenver player is joining the lobby. One will be randomly selected from this list.
     public AudioClip stateChangeSFX; //SFX for whenever the game state changes (e.g. Lobby -> Theme, Prompt -> Review, etc).
     public AudioClip resultStateSFX; //SFX for when the game enters the Results state.
     public AudioClip countDownSFX; //SFX for the countdown during the phases
-
-
 
     // No unicode in buttons; just ints
     public int[] starButtons = new int[] { 1, 2, 3, 4, 5 };
@@ -74,7 +85,7 @@ public class StageManagerServer : MonoBehaviour
     // ------------------------
     // Game state tracking
     // ------------------------
-    public enum SceneState { Lobby, Theme, Prompt, Review, Vote, Results }
+    public enum SceneState { Lobby, Tutorial, Theme, Prompt, Review, Vote, Results }
 
     // You asked about making this an enum: YES, it works fine.
     // JsonUtility will serialize it as an int (0,1,2...).
@@ -99,8 +110,8 @@ public class StageManagerServer : MonoBehaviour
                 }
             }
         }
-
     }
+
     //debugging trying to fix randomizer giving an error bc of fleck things
     private readonly System.Random _rng = new System.Random();
 
@@ -111,6 +122,7 @@ public class StageManagerServer : MonoBehaviour
     {
         lock (_mtLock) _mainThread.Enqueue(a);
     }
+
     void PickThemeAndPromptForRound()
     {
         if (themePrompts == null || themePrompts.Count == 0)
@@ -126,8 +138,8 @@ public class StageManagerServer : MonoBehaviour
         {
             int index = _rng.Next(themePrompts.Count);
             currentThemePrompt = themePrompts[index];
-
         }
+
         theme = currentThemePrompt.theme;
         prompt = currentThemePrompt.promptTemplate;
 
@@ -228,10 +240,6 @@ public class StageManagerServer : MonoBehaviour
 
     // Auto-advance counter: counts submissions/votes expected per step
     private int responsesReceived = 0;
-
-
-
-
 
     // ------------------------
     // Unity Start
@@ -339,23 +347,11 @@ public class StageManagerServer : MonoBehaviour
         });
 
         Debug.Log($"[Server] StageManagerServer started on {url}");
-
     }
 
-    private void OnDisable()
-    {
-        StopServer();
-    }
-
-    private void OnDestroy()
-    {
-        StopServer();
-    }
-
-    private void OnApplicationQuit()
-    {
-        StopServer();
-    }
+    private void OnDisable() { StopServer(); }
+    private void OnDestroy() { StopServer(); }
+    private void OnApplicationQuit() { StopServer(); }
 
     private void StopServer()
     {
@@ -419,6 +415,14 @@ public class StageManagerServer : MonoBehaviour
             }
         }
 
+        if (currentState == SceneState.Tutorial && tutorialTimerRequested && !tutorialTimerRunning)
+        {
+            tutorialTimerRequested = false;
+            tutorialTimerRunning = true;
+            Debug.Log("[Server] Tutorial timer actually starting (main thread)");
+            StartCoroutine(TutorialCountdown());
+        }
+
         if (currentState == SceneState.Theme && themeTimerRequested && !themeTimerRunning)
         {
             themeTimerRequested = false;
@@ -427,6 +431,26 @@ public class StageManagerServer : MonoBehaviour
             StartCoroutine(ThemeCountdown());
         }
     }
+
+    IEnumerator TutorialCountdown()
+    {
+        yield return new WaitForSeconds(tutorialDurationSeconds);
+
+        if (currentState == SceneState.Tutorial)
+        {
+            Debug.Log("[Server] Tutorial timer finished, advancing to Theme");
+
+            PickThemeAndPromptForRound();
+            currentState = SceneState.Theme;
+            themeTimerRequested = true;
+
+            SendStateToAll();
+            UpdateHostUI();
+        }
+
+        tutorialTimerRunning = false;
+    }
+
     IEnumerator ThemeCountdown()
     {
         yield return new WaitForSeconds(themeDurationSeconds - 5f);
@@ -442,6 +466,7 @@ public class StageManagerServer : MonoBehaviour
 
         themeTimerRunning = false;
     }
+
     private void UpdateHostUI() //UI Update Methods;
     {
         if (!updateUnityHostUI) return;
@@ -455,6 +480,10 @@ public class StageManagerServer : MonoBehaviour
         {
             case SceneState.Lobby:
                 UpdateLobbyUI();
+                break;
+
+            case SceneState.Tutorial:
+                // Tutorial UI is just a panel switch for now.
                 break;
 
             case SceneState.Theme:
@@ -487,9 +516,9 @@ public class StageManagerServer : MonoBehaviour
         RebuildOrderedConnections();
         TMP_Text[] slots =
         {
-        ui.p1Name, ui.p2Name, ui.p3Name, ui.p4Name, ui.p5Name,
-        ui.p6Name, ui.p7Name, ui.p8Name, ui.p9Name, ui.p10Name
-    };
+            ui.p1Name, ui.p2Name, ui.p3Name, ui.p4Name, ui.p5Name,
+            ui.p6Name, ui.p7Name, ui.p8Name, ui.p9Name, ui.p10Name
+        };
 
         for (int i = 0; i < slots.Length; i++)
         {
@@ -514,6 +543,7 @@ public class StageManagerServer : MonoBehaviour
         if (ui.theme != null)
             ui.theme.text = theme;
     }
+
     private void UpdatePromptUI()
     {
         var ui = UIManager.instance;
@@ -617,12 +647,10 @@ public class StageManagerServer : MonoBehaviour
         }
     }
 
-
     //SFX Related Methods
-
     void PlayPlayerJoinSFX()
     {
-        if (sfxSource != null && playerJoinSFXList != null)
+        if (sfxSource != null && playerJoinSFXList != null && playerJoinSFXList.Count > 0)
         {
             int randomInt = UnityEngine.Random.Range(0, playerJoinSFXList.Count);
             if (randomInt == 2)
@@ -672,7 +700,6 @@ public class StageManagerServer : MonoBehaviour
             countDownSource.Stop();
         }
     }
-
 
     // ------------------------
     // Phase input handling
@@ -733,8 +760,6 @@ public class StageManagerServer : MonoBehaviour
         }
     }
 
-
-
     // ------------------------
     // State transitions
     // ------------------------
@@ -745,8 +770,26 @@ public class StageManagerServer : MonoBehaviour
         switch (currentState)
         {
             case SceneState.Lobby:
-                Debug.Log("[Server] Transition Lobby -> Theme");
+                Debug.Log("[Server] Transition Lobby -> Tutorial/Theme");
                 StartNewRound();
+
+                if (enableTutorial && !tutorialHasRun)
+                {
+                    tutorialHasRun = true;
+                    currentState = SceneState.Tutorial;
+                    tutorialTimerRequested = true;
+                }
+                else
+                {
+                    PickThemeAndPromptForRound();
+                    currentState = SceneState.Theme;
+                    themeTimerRequested = true;
+                }
+                break;
+
+            case SceneState.Tutorial:
+                // Normally auto-advanced by TutorialCountdown, but keep this safe:
+                Debug.Log("[Server] Transition Tutorial -> Theme (manual)");
                 PickThemeAndPromptForRound();
                 currentState = SceneState.Theme;
                 themeTimerRequested = true;
@@ -787,10 +830,8 @@ public class StageManagerServer : MonoBehaviour
                 currentState = SceneState.Theme;
                 themeTimerRequested = true;
                 break;
-
-
-
         }
+
         SendStateToAll();
         UpdateHostUI();
         Debug.Log("[Server] Advanced to " + currentState);
@@ -823,7 +864,6 @@ public class StageManagerServer : MonoBehaviour
         AdvanceState();
         SendStateToAll();
     }
-
 
     // ------------------------
     // Round building logic
@@ -896,13 +936,11 @@ public class StageManagerServer : MonoBehaviour
             try
             {
                 var conn = orderedConnections[i];
-
                 var p = players[conn];
-                
+
                 p.assignedEntryIndex = (i + 1) % n;
-                
+
                 //p.rating = (ReviewRating)_rng.Next(0, 3);
-                
             }
             catch (System.Exception ex)
             {
@@ -1026,6 +1064,9 @@ public class StageManagerServer : MonoBehaviour
             case SceneState.Lobby:
                 return "Enter your name to join.";
 
+            case SceneState.Tutorial:
+                return $"Tutorial: Get ready. Theme starts in {tutorialDurationSeconds:0} seconds...";
+
             case SceneState.Prompt:
                 return "Fill in the two blanks for the tagline.";
 
@@ -1110,7 +1151,6 @@ public class StageManagerServer : MonoBehaviour
         });
     }
 
-
     // ------------------------
     // DTOs
     // ------------------------
@@ -1163,6 +1203,7 @@ public class StageManagerServer : MonoBehaviour
         public string resultsText;
     }
 }
+
 [Serializable]
 public class ThemePrompt
 {
