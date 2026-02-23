@@ -755,6 +755,9 @@ public class StageManagerServer : MonoBehaviour
         p.hasVotedThisEntry = true;
 
         responsesReceived++;
+
+        Debug.Log(p.name + " voted. Responses received:" + responsesReceived);
+
         if (responsesReceived >= players.Count)
         {
             AdvanceVoteTargetOrFinish();
@@ -1000,7 +1003,7 @@ public class StageManagerServer : MonoBehaviour
             SendStateToAll();
             return;
         }
-
+        SendStateToAll();
         ResetVotesForCurrentEntry();
     }
 
