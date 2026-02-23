@@ -1,0 +1,99 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1982689852210002470
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8650093599637289416}
+  - component: {fileID: 8947218247427366078}
+  m_Layer: 0
+  m_Name: StageManagerServerUpdated
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8650093599637289416
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1982689852210002470}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8947218247427366078
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1982689852210002470}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2111fe3d79dbd29429d1b240acacc851, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  listenAddress: 0.0.0.0
+  port: 8080
+  themePrompts:
+  - theme: Fantasy Football
+    promptTemplate: Which of your favorite {A} has the most {B} quarterback?
+  - theme: History
+    promptTemplate: '{A} exposed-- You never knew that they were so {B}!'
+  - theme: Anime
+    promptTemplate: Top 10 {B} moments in {A}!
+  - theme: Cooking Gadgets
+    promptTemplate: If only you could {A}... Well, good news! You CAN, and it's {B}!
+  - theme: Holiday Help
+    promptTemplate: Oh no! It's 30 minutes before Christmas Eve, and you haven't
+      fixed up the {A}?! Don't worry, we'll help you make it {B}!
+  - theme: First Aid
+    promptTemplate: 'Are you always afraid of a {A} in your home? Pick this up to
+      feel {B} again. '
+  - theme: ' Pet Care'
+    promptTemplate: Never {A} your cat again-- here's the new {B} cleaning method!
+  - theme: Back To School
+    promptTemplate: Tired of {A} always being such a {B} problem?
+  - theme: Game Time
+    promptTemplate: Don't let {A} stop you from being the most {B} gamer you can
+      be!
+  - theme: Sports
+    promptTemplate: 'Protect your {A} from that {B} other team! '
+  - theme: Teambuilding
+    promptTemplate: 'The ultimate in teambuilding fun: don''t {A}, just keep it nice
+      and {B}!'
+  - theme: Public Disaster Avoidance
+    promptTemplate: Oh, no! Everyone saw your {A}, and now you look {B}! We'll help
+      you never let it happen again!
+  - theme: How-To Help Books
+    promptTemplate: Stop pretending you know how to use the {A}, and learn how to
+      {B} for REAL!
+  - theme: Home Emergencies
+    promptTemplate: Your {A} isn't supposed to be that {B}... or IS it?
+  - theme: Do-It-At-Home
+    promptTemplate: 'Ever wanted to {A} easier than {B}? '
+  - theme: Surprising Upgrade
+    promptTemplate: 'What if your {A} had a {B} mode? '
+  - theme: Hidden Feature
+    promptTemplate: No one told you your {A} could be so {B}!
+  - theme: Mystery Gifts
+    promptTemplate: What do you mean you gave {A} to your mom?! Use this {B} product
+      to smooth things over!
+  - theme: Interior Design 101
+    promptTemplate: Yeah, so, that {A} is not supposed to be in the {B} room.
+  theme: Review Bomber
+  themeDurationSeconds: 10
+  prompt: Dont let your {A} ever cause {B} again!
+  starButtons: 0100000002000000030000000400000005000000
+  currentState: 0

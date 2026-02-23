@@ -316,6 +316,13 @@ public class StageManagerServer : MonoBehaviour
                                 AdvanceState();
                             break;
 
+                        case "newRound":
+                            // Host-only: after a round ends (Results), start the next round.
+                            // Client should send: { type:"newRound" }
+                            if (p.isFirst && (currentState == SceneState.Results))
+                                AdvanceState(); // Results -> Theme
+                            break;
+
                         case "input":
                             HandleInput(socket, p, msg);
                             break;
@@ -512,6 +519,9 @@ public class StageManagerServer : MonoBehaviour
         var ui = UIManager.instance;
         if (ui.prompt != null)
             ui.prompt.text = prompt; // this is the template with {A}/{B}
+
+        if (ui.prompt_theme != null)
+            ui.prompt_theme.text = theme;
     }
 
     private void UpdateVoteUI()
@@ -550,34 +560,45 @@ public class StageManagerServer : MonoBehaviour
 
         ApplyResultSlot(
             ranked, 0,
-            ui.firstPlacePrompt, ui.firstPlaceReview, ui.firstPlaceStarRank, ui.firstPlaceScore);
+            ui.firstPlacePromptName, ui.firstPlacePrompt, ui.firstPlaceReviewName, ui.firstPlaceReview,
+            ui.firstPlaceStarRank, ui.firstPlaceScore);
 
         ApplyResultSlot(
             ranked, 1,
-            ui.secondPlacePrompt, ui.secondPlaceReview, ui.secondPlaceStarRank, ui.secondPlaceScore);
+            ui.secondPlacePromptName, ui.secondPlacePrompt, ui.secondPlaceReviewName, ui.secondPlaceReview,
+            ui.secondPlaceStarRank, ui.secondPlaceScore);
 
         ApplyResultSlot(
             ranked, 2,
-            ui.thirdPlacePrompt, ui.thirdPlaceReview, ui.thirdPlaceStarRank, ui.thirdPlaceScore);
+            ui.thirdPlacePromptName, ui.thirdPlacePrompt, ui.thirdPlaceReviewName, ui.thirdPlaceReview,
+            ui.thirdPlaceStarRank, ui.thirdPlaceScore);
     }
 
     private void ApplyResultSlot(
         List<Entry> ranked, int idx,
-        TMP_Text promptText, TMP_Text reviewText, Image starImg, TMP_Text scoreText)
+        TMP_Text promptNameText, TMP_Text promptText, TMP_Text reviewNameText, TMP_Text reviewText,
+        Image starImg, TMP_Text scoreText)
     {
-        if (promptText == null && reviewText == null && starImg == null && scoreText == null) return;
+        if (promptNameText != null) promptNameText.text = "";
+        if (promptText != null) promptText.text = "";
+        if (reviewNameText != null) reviewNameText.text = "";
+        if (reviewText != null) reviewText.text = "";
+        if (scoreText != null) scoreText.text = "";
+        if (starImg != null) starImg.enabled = false;
 
         if (idx >= ranked.Count)
         {
             if (promptText != null) promptText.text = "-";
-            if (reviewText != null) reviewText.text = "";
-            if (scoreText != null) scoreText.text = "";
-            if (starImg != null) starImg.enabled = false;
             return;
         }
 
         var e = ranked[idx];
+        string promptName = string.IsNullOrEmpty(e.playerName) ? "?" : e.playerName;
+        string reviewName = string.IsNullOrEmpty(e.reviewerName) ? "?" : e.reviewerName;
+
+        if (promptNameText != null) promptNameText.text = promptName;
         if (promptText != null) promptText.text = e.promptFinal ?? "";
+        if (reviewNameText != null) reviewNameText.text = reviewName;
         if (reviewText != null) reviewText.text = e.reviewText ?? "";
         if (scoreText != null) scoreText.text = e.AverageStars.ToString("0.00");
 
@@ -604,7 +625,14 @@ public class StageManagerServer : MonoBehaviour
         if (sfxSource != null && playerJoinSFXList != null)
         {
             int randomInt = UnityEngine.Random.Range(0, playerJoinSFXList.Count);
-            sfxSource.PlayOneShot(playerJoinSFXList[randomInt]);
+            if (randomInt == 2)
+            {
+                sfxSource.PlayOneShot(playerJoinSFXList[randomInt], 0.1f);
+            }
+            else
+            {
+                sfxSource.PlayOneShot(playerJoinSFXList[randomInt]);
+            }
         }
     }
 
@@ -754,10 +782,12 @@ public class StageManagerServer : MonoBehaviour
 
             case SceneState.Results:
                 Debug.Log("[Server] Transition Results -> Theme");
+                StartNewRound();                 //点“Start New Round”后立刻清空上一轮数据
                 PickThemeAndPromptForRound();
                 currentState = SceneState.Theme;
                 themeTimerRequested = true;
                 break;
+
 
 
         }
@@ -871,7 +901,7 @@ public class StageManagerServer : MonoBehaviour
                 
                 p.assignedEntryIndex = (i + 1) % n;
                 
-                p.rating = (ReviewRating)_rng.Next(0, 3);
+                //p.rating = (ReviewRating)_rng.Next(0, 3);
                 
             }
             catch (System.Exception ex)
