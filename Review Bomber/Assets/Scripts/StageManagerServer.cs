@@ -262,8 +262,6 @@ public class StageManagerServer : MonoBehaviour
                     RebuildOrderedConnections();
                     RefreshConnectedClientsDebug();
 
-                    PlayPlayerJoinSFX();
-
                     SendStateTo(socket);
                     UpdateHostUI();
                 });
@@ -310,6 +308,7 @@ public class StageManagerServer : MonoBehaviour
                         case "join":
                             p.name = msg.name;
                             Debug.Log($"[Server] join from {p.name}");
+                            PlayPlayerJoinSFX();
                             break;
 
                         case "start":
