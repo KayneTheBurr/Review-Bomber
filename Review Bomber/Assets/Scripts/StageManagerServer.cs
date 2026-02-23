@@ -997,6 +997,7 @@ public class StageManagerServer : MonoBehaviour
             currentState = SceneState.Results;
             responsesReceived = 0;
             Debug.Log("[Server] Voting complete -> Results");
+            SendStateToAll();
             return;
         }
 

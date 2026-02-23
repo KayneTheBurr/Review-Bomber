@@ -83,6 +83,7 @@ public class UIManager : MonoBehaviour
         if (themeUI) themeUI.SetActive(false);
         if (promptUI) promptUI.SetActive(false);
         if (voteUI) voteUI.SetActive(false);
+        if(reviewUI) reviewUI.SetActive(false);
         if (resultUI) resultUI.SetActive(false);
         if (tutorialUI) tutorialUI.SetActive(false);
 
