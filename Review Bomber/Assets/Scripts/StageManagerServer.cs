@@ -91,7 +91,8 @@ public class StageManagerServer : MonoBehaviour
     // JsonUtility will serialize it as an int (0,1,2...).
     public enum ReviewRating { Good = 0, Average = 1, Bad = 2 }
 
-    private SceneState _currentState = SceneState.Lobby; // for detecting state changes in Update()
+    [SerializeField] private SceneState _currentState = SceneState.Lobby; // for detecting state changes in Update()
+    
     public SceneState currentState
     {
         get { return _currentState; }
@@ -340,7 +341,7 @@ public class StageManagerServer : MonoBehaviour
                             break;
                     }
 
-                    SendStateToAll();
+                    //SendStateToAll();
                     UpdateHostUI();
                 });
             };
@@ -825,7 +826,7 @@ public class StageManagerServer : MonoBehaviour
 
             case SceneState.Results:
                 Debug.Log("[Server] Transition Results -> Theme");
-                StartNewRound();                 //点“Start New Round”后立刻清空上一轮数据
+                StartNewRound();                 
                 PickThemeAndPromptForRound();
                 currentState = SceneState.Theme;
                 themeTimerRequested = true;
