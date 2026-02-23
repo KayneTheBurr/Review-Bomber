@@ -10,6 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 4515861995331079312}
   - component: {fileID: 3573332086562962725}
+  - component: {fileID: 4590817590145312255}
+  - component: {fileID: 158557643026095795}
   m_Layer: 0
   m_Name: StageManagerServer
   m_TagString: Untagged
@@ -44,18 +46,258 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2111fe3d79dbd29429d1b240acacc851, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  listenAddress: 0.0.0.0
+  listenAddress: 127.0.0.1
   port: 8000
-  themePrompts: []
+  themePrompts:
+  - theme: Fantasy Football
+    promptTemplate: Which team has the strongest {A}? Support {B} now!
+  - theme: History
+    promptTemplate: '{A} exposed-- You never knew THIS about {B}!'
+  - theme: Anime
+    promptTemplate: Top 10 {A} in {B}!
+  - theme: Cooking Gadgets
+    promptTemplate: If only you could {A} with only your {B}... Well, good news!
+      You CAN!
+  - theme: Holiday Help
+    promptTemplate: Oh no! It's 30 minutes before {A}, and you haven't fixed up a
+      {B}?! Don't worry, we've got you covered!
+  - theme: First Aid
+    promptTemplate: Are you always afraid of a {A} in your {B}? Never worry again!
+  - theme: ' Pet Care'
+    promptTemplate: Never {A} your {B} again!
+  - theme: Back To School
+    promptTemplate: Tired of {A} always ruining your {B}?
+  - theme: Game Time
+    promptTemplate: Don't let {A} stop you from being the best {B} you can be!
+  - theme: Sports
+    promptTemplate: 'Protect your {A} from the other {B}! '
+  - theme: Teambuilding
+    promptTemplate: 'The ultimate in teambuilding fun: don''t {A}, or everyone {B}s!'
+  - theme: Public Disaster Avoidance
+    promptTemplate: Oh, no! Everyone saw your {A} fall out of your {B}! We'll help
+      you never let it happen again!
+  - theme: How-To Help Books
+    promptTemplate: Stop pretending you know how to use the {A}, and learn how to
+      {B} for REAL!
+  - theme: Home Emergencies
+    promptTemplate: Your {A} isn't supposed to be your {B}... or IS it?
+  - theme: Do-It-At-Home
+    promptTemplate: 'Ever wanted to {A} without {B}? '
+  - theme: Surprising Upgrade
+    promptTemplate: 'What if your {A} had a {B} mode? '
+  - theme: Hidden Feature
+    promptTemplate: No one told you your {A} could {B}!
+  - theme: Mystery Gifts
+    promptTemplate: What do you mean you gave {A} to {B}?!
+  - theme: Interior Design 101
+    promptTemplate: Yeah, so, that {A} is not supposed to be in the {B} room.
   theme: Review Bomber
-  themeDurationSeconds: 10
+  themeDurationSeconds: 5
   connectedClients: []
   updateUnityHostUI: 1
   prompt: Dont let your {A} ever cause {B} again!
-  countDownSource: {fileID: 0}
-  sfxSource: {fileID: 0}
-  playerJoinSFXList: []
-  stateChangeSFX: {fileID: 0}
-  resultStateSFX: {fileID: 0}
-  countDownSFX: {fileID: 0}
+  countDownSource: {fileID: 158557643026095795}
+  sfxSource: {fileID: 4590817590145312255}
+  playerJoinSFXList:
+  - {fileID: 8300000, guid: 1c601a74574ef6d46aec6f6431ec88bb, type: 3}
+  - {fileID: 8300000, guid: 30838978c9fbc1044a0d6c9fd0157b5b, type: 3}
+  - {fileID: 8300000, guid: add3c69d4f64ac04aaa6c82b1a2975dd, type: 3}
+  - {fileID: 8300000, guid: ec790083b0d339741910b2827c849987, type: 3}
+  stateChangeSFX: {fileID: 8300000, guid: 09666971dbff4314d898182787adb9cd, type: 3}
+  resultStateSFX: {fileID: 8300000, guid: cd78b7fae270b814d9452f9e58e520a7, type: 3}
+  countDownSFX: {fileID: 8300000, guid: d959917e54340c04f83f4acf6712e8d3, type: 3}
   starButtons: 0100000002000000030000000400000005000000
+--- !u!82 &4590817590145312255
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7907018892525213734}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!82 &158557643026095795
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7907018892525213734}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4

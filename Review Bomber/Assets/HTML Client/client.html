@@ -253,7 +253,7 @@
         /* ===== Amazon-ish 评论块：方框 + 角落切角 ===== */
         .box {
             margin: 12px 0 14px;
-            padding: 12px 12px;
+            padding: 18px 12px 12px 34px; 
             background: #ffffff;
             border: 2px solid var(--line2);
             box-shadow: var(--shadow2);
@@ -263,14 +263,15 @@
             .box::before {
                 content: "";
                 position: absolute;
-                left: -2px;
-                top: -2px;
-                width: 58px;
-                height: 58px;
-                background: linear-gradient(135deg, rgba(30,102,255,.18), rgba(34,211,238,.18));
+                left: 2px;
+                top: 2px;
+                width: 54px;
+                height: 54px;
+                background: linear-gradient(135deg, rgba(30,102,255,.18), rgba(34,211,238,.10));
                 border-right: 2px solid var(--line2);
                 border-bottom: 2px solid var(--line2);
                 clip-path: polygon(0 0, 100% 0, 0 100%);
+                pointer-events: none;
             }
 
             .box::after {
@@ -285,6 +286,10 @@
                 border: 2px solid var(--line2);
                 color: var(--muted);
                 letter-spacing: .6px;
+            }
+
+            .box > .small {
+                margin-left: 22px;
             }
 
         hr {
