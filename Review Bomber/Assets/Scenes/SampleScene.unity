@@ -141,6 +141,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
+--- !u!1 &100145067 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1637097273310244822, guid: b0a460dad1aeac04c862fa7cbecb1b28, type: 3}
+  m_PrefabInstance: {fileID: 452581389}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &102016036 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5467030542938172817, guid: 2ff5b5ed5f050204a9ab8f24021d7f20, type: 3}
@@ -493,14 +498,17 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1637097273310244822, guid: b0a460dad1aeac04c862fa7cbecb1b28, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 452581394}
   m_SourcePrefab: {fileID: 100100000, guid: b0a460dad1aeac04c862fa7cbecb1b28, type: 3}
 --- !u!114 &452581390 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4180528280865632268, guid: b0a460dad1aeac04c862fa7cbecb1b28, type: 3}
   m_PrefabInstance: {fileID: 452581389}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 100145067}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
@@ -517,6 +525,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
+--- !u!114 &452581394
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100145067}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8ace8ced0e81c847968cdca0aeda757, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Febucci.TextAnimatorForUnity.TMP.Runtime::Febucci.TextAnimatorForUnity.TextMeshPro.TextAnimator_TMP
+  localSettings:
+    isResettingTimeOnNewText: 1
+    defaultEffectsMode: 1
+    timeScale: 0
+    defaultBehaviorTags:
+    - wave
+    defaultAppearanceTags: []
+    defaultDisappearanceTags: []
+    isAnimatingBehaviors: 1
+    isAnimatingAppearances: 1
+    isAnimatingDisappearances: 1
+    useDynamicScaling: 1
+    referenceFontSize: 12
+  sharedSettings: {fileID: 0}
+  animationLoop: 0
+  databaseEffects: {fileID: 0}
+  styleSheet: {fileID: 0}
 --- !u!114 &468835994 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4544632819572195370, guid: 994c32805920d9245895897d00e3e413, type: 3}
@@ -1239,6 +1276,11 @@ PrefabInstance:
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1622690023702487468, guid: 5db35481fd1f2a34283356bca81b22b5, type: 3}
   m_PrefabInstance: {fileID: 1247782026}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1052305337 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 813439222263305300, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
+  m_PrefabInstance: {fileID: 8961260298365332389}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1125822392 stripped
 GameObject:
@@ -2379,12 +2421,41 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4794691844719841112, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
   m_PrefabInstance: {fileID: 8961260298365332389}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1052305337}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
+--- !u!114 &5309805835965586948
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1052305337}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8ace8ced0e81c847968cdca0aeda757, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Febucci.TextAnimatorForUnity.TMP.Runtime::Febucci.TextAnimatorForUnity.TextMeshPro.TextAnimator_TMP
+  localSettings:
+    isResettingTimeOnNewText: 1
+    defaultEffectsMode: 1
+    timeScale: 0
+    defaultBehaviorTags:
+    - shake
+    defaultAppearanceTags: []
+    defaultDisappearanceTags: []
+    isAnimatingBehaviors: 1
+    isAnimatingAppearances: 1
+    isAnimatingDisappearances: 1
+    useDynamicScaling: 1
+    referenceFontSize: 12
+  sharedSettings: {fileID: 0}
+  animationLoop: 0
+  databaseEffects: {fileID: 0}
+  styleSheet: {fileID: 0}
 --- !u!1001 &8961260298365332389
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2488,7 +2559,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 813439222263305300, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5309805835965586948}
   m_SourcePrefab: {fileID: 100100000, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
