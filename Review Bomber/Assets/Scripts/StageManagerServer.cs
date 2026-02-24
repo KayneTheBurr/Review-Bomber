@@ -1140,7 +1140,43 @@ public class StageManagerServer : MonoBehaviour
     void SendStateTo(IWebSocketConnection conn)
     {
         Player p = players[conn];
+        // ===== Per-player Mute (so many players can wait at once) =====
+        bool everyoneReady = AllActivePlayersReadyForCurrentState();
 
+        // Only apply "Mute" during input-driven phases
+        bool phaseSupportsMute =
+            (currentState == SceneState.Prompt) ||
+            (currentState == SceneState.Review) ||
+            (currentState == SceneState.Vote);
+
+        bool thisPlayerReady =
+            (currentState == SceneState.Prompt && p.hasSubmittedPrompt) ||
+            (currentState == SceneState.Review && p.hasSubmittedReview) ||
+            (currentState == SceneState.Vote && p.hasVotedThisEntry);
+
+        // If this player finished but others haven't, keep them on Wait/Mute screen
+        if (phaseSupportsMute && thisPlayerReady && !everyoneReady)
+        {
+            GameState muteState = new GameState
+            {
+                scene = "Mute",
+                isFirst = p.isFirst,
+                prompt = "Waiting for other players to submit…",
+                resultsText = (currentState == SceneState.Results) ? BuildResultsSummary() : null
+            };
+
+            try
+            {
+                conn.Send(JsonUtility.ToJson(muteState));
+                if (!string.IsNullOrEmpty(p.toastOnce)) p.toastOnce = null;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning("[Server] Send Mute state failed: " + ex.Message);
+            }
+
+            return;
+        }
         GameState state = new GameState
         {
             scene = currentState.ToString(),

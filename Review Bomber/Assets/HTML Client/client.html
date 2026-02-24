@@ -567,6 +567,8 @@
             let ws;
             let currentScreenId = null;
             let lastScene = null;
+            let isMutedLock = false;
+            let mutedFromScene = null; 
             let voteLocked = false;
             let lastVoteEntryIndex = -1;
             let lastServerMessageAt = null;
@@ -691,12 +693,27 @@
                         state.isFirst && (state.scene === "Results")
                             ? "inline" : "none";
 
+                    // ===== Mute lock (client-side guard) =====
+                    if (state.scene === "Mute" || state.scene === "Wait") {
+                        isMutedLock = true;
+                        mutedFromScene = mutedFromScene || lastScene;
+                    } else {
+                        if (isMutedLock && mutedFromScene && state.scene === mutedFromScene) {
+                            return;
+                        }
+                        if (isMutedLock && mutedFromScene && state.scene !== mutedFromScene) {
+                            isMutedLock = false;
+                            mutedFromScene = null;
+                        }
+                    }
+
                     switch (state.scene) {
                         case "Lobby":
                             showScreen("screenLobby", msg);
                             break;
 
                         case "Mute":
+                            mutedFromScene = mutedFromScene || lastScene;
                             showScreen("screenWait", "Wait for other players to finish…");
                             break;
 
