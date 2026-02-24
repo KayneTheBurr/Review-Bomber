@@ -116,6 +116,8 @@ public class VoteHandler : MonoBehaviour
 
     public void ResetVotes()
     {
+        if (playerVotes.Count == 0) return;
+
         foreach (PlayerVote playerVote in playerVotes)
         {
             playerVote.hasVoted = false;
