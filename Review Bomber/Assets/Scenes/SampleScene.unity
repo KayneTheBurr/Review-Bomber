@@ -422,14 +422,9 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 708204310600940632, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
       propertyPath: m_text
-      value: "Welcome to Review Bomber-- The game where you make your own fad product,
-        and review other products! You\u2019ll get a prompt and theme. It\u2019s
-        up to you to fill in a noun and descriptive adjective to make the zaniest
-        possible tagline for your mysterious product. Then, after the tagline\u2019s
-        done, you write a review for someone ELSE\u2019S ridiculous product. When
-        all\u2019s said and done, you\u2019ll give a 1 - 5 star rating of someone\u2019s
-        review-- the one with the most stars at the end is the number 1 seller on
-        the marketplace! Get ready\u2026"
+      value: "Welcome to Review Bomber! Here's how to play... \r\n1. Fill in two
+        words for the tagline. \r\n2. Write a review for the product described. \r\n3.
+        Rate the review! Person with the most stars wins."
       objectReference: {fileID: 0}
     - target: {fileID: 708204310600940632, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
       propertyPath: m_fontSize
@@ -438,6 +433,10 @@ PrefabInstance:
     - target: {fileID: 708204310600940632, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
       propertyPath: m_fontSizeBase
       value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 708204310600940632, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
+      propertyPath: m_isRightToLeft
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 751528465066625155, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
       propertyPath: m_Pivot.x
@@ -1412,7 +1411,8 @@ MonoBehaviour:
     defaultEffectsMode: 1
     timeScale: 0
     defaultBehaviorTags: []
-    defaultAppearanceTags: []
+    defaultAppearanceTags:
+    - size
     defaultDisappearanceTags: []
     isAnimatingBehaviors: 1
     isAnimatingAppearances: 1
