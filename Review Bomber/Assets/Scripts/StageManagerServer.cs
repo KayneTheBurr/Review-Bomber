@@ -107,6 +107,10 @@ public class StageManagerServer : MonoBehaviour
                 {
                     PlayResultsStateSFX();
                 }
+                else if(value == SceneState.Tutorial)
+                {
+                    PlayTutorialSFX();
+                }
                 else
                 {
                     PlayStateChangeSFX();
@@ -371,6 +375,7 @@ public class StageManagerServer : MonoBehaviour
                             break;
 
                         case "input":
+                            SendMuteTo(socket);
                             HandleInput(socket, p, msg);
                             break;
 
@@ -1167,6 +1172,54 @@ public class StageManagerServer : MonoBehaviour
         }
     }
 
+    void SendMuteTo(IWebSocketConnection conn)
+    {
+        Player p = players[conn];
+
+        GameState state = new GameState
+        {
+            scene = "Mute",
+            /*
+            isFirst = p.isFirst,
+
+            theme = theme,
+            prompt = BuildPromptTextForClient(p),
+
+            // Prompt template (so client can display it if desired)
+            taglineTemplate = prompt,
+
+            // Review assignment for this player
+            assignedEntryIndex = p.assignedEntryIndex,
+            assignedTagline = GetAssignedTaglineFor(p),
+            reviewRating = (int)p.rating,
+            reviewRatingLabel = p.rating.ToString(),
+
+            // Vote display data
+            entryIndex = currentEntryIndex,
+            entryCount = entries != null ? entries.Count : 0,
+            currentTagline = GetCurrentEntryTagline(),
+            currentReview = GetCurrentEntryReview(),
+            currentReviewRating = GetCurrentEntryRatingLabel(),
+
+            // Buttons (ints) for Vote phase only
+            starButtons = (currentState == SceneState.Vote) ? starButtons : null,
+            */
+            // Results
+            resultsText = (currentState == SceneState.Results) ? BuildResultsSummary() : null
+        };
+
+        try
+        {
+            conn.Send(JsonUtility.ToJson(state));
+
+            // Clear one-shot toast after sending
+            if (!string.IsNullOrEmpty(p.toastOnce)) p.toastOnce = null;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning("[Server] SendStateTo failed for a connection: " + ex.Message);
+        }
+    }
     string BuildPromptTextForClient(Player p)
     {
         // Keep this very simple; the phone UI can display more specific instructions

@@ -428,11 +428,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 708204310600940632, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
       propertyPath: m_fontSize
-      value: 60
+      value: 57
       objectReference: {fileID: 0}
     - target: {fileID: 708204310600940632, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
       propertyPath: m_fontSizeBase
-      value: 60
+      value: 57
       objectReference: {fileID: 0}
     - target: {fileID: 708204310600940632, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
       propertyPath: m_isRightToLeft
@@ -524,7 +524,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1784255492562549654, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 357.8
+      value: 387
       objectReference: {fileID: 0}
     - target: {fileID: 4794691844719841112, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
       propertyPath: m_text
@@ -548,7 +548,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9160009333593348019, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 357.8
+      value: 387
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
@@ -1364,7 +1364,7 @@ MonoBehaviour:
   actionsDatabase: {fileID: 0}
   localSettings:
     useTypeWriter: 1
-    startTypewriterMode: 3
+    startTypewriterMode: -1
     hideAppearancesOnSkip: 0
     hideDisappearancesOnSkip: 0
     triggerEventsOnSkip: 0
@@ -1980,6 +1980,10 @@ PrefabInstance:
       value: 8080
       objectReference: {fileID: 0}
     - target: {fileID: 3573332086562962725, guid: 43cdacf7aee4c6d41adb5fd757340f0b, type: 3}
+      propertyPath: TutorialSFX
+      value: 
+      objectReference: {fileID: 8300000, guid: c936519288474904cabad277b0ef1879, type: 3}
+    - target: {fileID: 3573332086562962725, guid: 43cdacf7aee4c6d41adb5fd757340f0b, type: 3}
       propertyPath: listenAddress
       value: 127.0.0.1
       objectReference: {fileID: 0}
@@ -2366,6 +2370,10 @@ PrefabInstance:
       propertyPath: secondPlaceReviewName
       value: 
       objectReference: {fileID: 92774081}
+    - target: {fileID: 2503287989663052145, guid: 0222e62210192c74784291e76c8da69e, type: 3}
+      propertyPath: SubmissionCounterPanel
+      value: 
+      objectReference: {fileID: 6295157954736484755, guid: 7204ad47fbfcc28408d60db09afd9377, type: 3}
     - target: {fileID: 5413717678879974092, guid: 0222e62210192c74784291e76c8da69e, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.29938
