@@ -540,7 +540,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7207863789876493606, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7954384993367343983, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -1977,7 +1977,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3573332086562962725, guid: 43cdacf7aee4c6d41adb5fd757340f0b, type: 3}
       propertyPath: port
-      value: 8080
+      value: 8000
       objectReference: {fileID: 0}
     - target: {fileID: 3573332086562962725, guid: 43cdacf7aee4c6d41adb5fd757340f0b, type: 3}
       propertyPath: TutorialSFX
@@ -1985,7 +1985,7 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: c936519288474904cabad277b0ef1879, type: 3}
     - target: {fileID: 3573332086562962725, guid: 43cdacf7aee4c6d41adb5fd757340f0b, type: 3}
       propertyPath: listenAddress
-      value: 127.0.0.1
+      value: 10.50.0.57
       objectReference: {fileID: 0}
     - target: {fileID: 3573332086562962725, guid: 43cdacf7aee4c6d41adb5fd757340f0b, type: 3}
       propertyPath: enableTutorial
@@ -2615,6 +2615,22 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1784255492562549654, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 945.63
+      objectReference: {fileID: 0}
+    - target: {fileID: 1784255492562549654, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 209.49
+      objectReference: {fileID: 0}
+    - target: {fileID: 1784255492562549654, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -4.31
+      objectReference: {fileID: 0}
+    - target: {fileID: 1784255492562549654, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -51.82
+      objectReference: {fileID: 0}
     - target: {fileID: 7022192239973417894, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
       propertyPath: m_Camera
       value: 
@@ -2625,7 +2641,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7207863789876493606, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9160009333593348019, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 1037.31
+      objectReference: {fileID: 0}
+    - target: {fileID: 9160009333593348019, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 315.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 9160009333593348019, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -1.12
+      objectReference: {fileID: 0}
+    - target: {fileID: 9160009333593348019, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -55
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
