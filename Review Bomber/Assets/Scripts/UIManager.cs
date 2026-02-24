@@ -106,7 +106,7 @@ public class UIManager : MonoBehaviour
 
             case "Vote":
                 if (voteUI) voteUI.SetActive(true);
-                if (SubmissionCounterPanel) SubmissionCounterPanel.SetActive(true);
+                //if (SubmissionCounterPanel) SubmissionCounterPanel.SetActive(true);
                 break;
             case "Results": if (resultUI) resultUI.SetActive(true); break;
             default: if (lobbyUI) lobbyUI.SetActive(true); break;
