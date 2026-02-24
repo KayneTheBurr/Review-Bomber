@@ -78,6 +78,8 @@ public class StageManagerServer : MonoBehaviour
     public AudioClip stateChangeSFX; //SFX for whenever the game state changes (e.g. Lobby -> Theme, Prompt -> Review, etc).
     public AudioClip resultStateSFX; //SFX for when the game enters the Results state.
     public AudioClip countDownSFX; //SFX for the countdown during the phases
+    public AudioClip answerSubmissionSFX; //SFX for submission
+    public AudioClip TutorialSFX;
 
     // No unicode in buttons; just ints
     public int[] starButtons = new int[] { 1, 2, 3, 4, 5 };
@@ -373,6 +375,7 @@ public class StageManagerServer : MonoBehaviour
                             break;
 
                         case "choice":
+                            PlayAnswerSubmissionSFX();
                             HandleChoice(socket, p, msg);
                             break;
                     }
@@ -729,6 +732,23 @@ public class StageManagerServer : MonoBehaviour
         }
     }
 
+    void PlayAnswerSubmissionSFX()
+    {
+        if (sfxSource != null && answerSubmissionSFX != null)
+        {
+            sfxSource.PlayOneShot(answerSubmissionSFX);
+        }
+    }
+
+    void PlayTutorialSFX()
+    {
+        if (sfxSource != null && answerSubmissionSFX != null)
+        {
+            sfxSource.PlayOneShot(TutorialSFX);
+        }
+    }
+
+
     IEnumerator StopCountDownAfter(float seconds)
     {
         yield return new WaitForSeconds(seconds);
@@ -745,6 +765,7 @@ public class StageManagerServer : MonoBehaviour
     {
         if (currentState == SceneState.Prompt)
         {
+            PlayAnswerSubmissionSFX();
             // Two blanks A/B
             p.blankA = msg.a ?? "";
             p.blankB = msg.b ?? "";
@@ -762,6 +783,7 @@ public class StageManagerServer : MonoBehaviour
 
         if (currentState == SceneState.Review)
         {
+            PlayAnswerSubmissionSFX();
             p.reviewText = msg.text ?? "";
             p.hasSubmittedReview = true;
 
