@@ -1,6 +1,7 @@
 using Unity.VisualScripting;
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class PlayerVote : MonoBehaviour
 {
@@ -21,10 +22,12 @@ public class PlayerVote : MonoBehaviour
         if (hasVoted)
         {
             votedImage.SetActive(true);
+            gameObject.GetComponent<Image>().color = yesVotedColor;
         }
         else
         {
             votedImage.SetActive(false);
+            gameObject.GetComponent<Image>().color = notVotedColor;
         }
     }
 }

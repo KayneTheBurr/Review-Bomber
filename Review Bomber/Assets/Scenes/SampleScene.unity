@@ -1578,6 +1578,11 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 1622690023702487468, guid: 5db35481fd1f2a34283356bca81b22b5, type: 3}
   m_PrefabInstance: {fileID: 1247782026}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1063037140 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7118706191385025472, guid: 7204ad47fbfcc28408d60db09afd9377, type: 3}
+  m_PrefabInstance: {fileID: 1897695484}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1125822392 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 412294674479294052, guid: 994c32805920d9245895897d00e3e413, type: 3}
@@ -1977,7 +1982,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3573332086562962725, guid: 43cdacf7aee4c6d41adb5fd757340f0b, type: 3}
       propertyPath: port
-      value: 8000
+      value: 8080
       objectReference: {fileID: 0}
     - target: {fileID: 3573332086562962725, guid: 43cdacf7aee4c6d41adb5fd757340f0b, type: 3}
       propertyPath: TutorialSFX
@@ -1985,7 +1990,7 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: c936519288474904cabad277b0ef1879, type: 3}
     - target: {fileID: 3573332086562962725, guid: 43cdacf7aee4c6d41adb5fd757340f0b, type: 3}
       propertyPath: listenAddress
-      value: 10.50.0.57
+      value: 10.50.10.155
       objectReference: {fileID: 0}
     - target: {fileID: 3573332086562962725, guid: 43cdacf7aee4c6d41adb5fd757340f0b, type: 3}
       propertyPath: enableTutorial
@@ -2234,9 +2239,21 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6276008642915056899, guid: 7204ad47fbfcc28408d60db09afd9377, type: 3}
+      propertyPath: stageManagerServer
+      value: 
+      objectReference: {fileID: 1565302033}
+    - target: {fileID: 6276008642915056899, guid: 7204ad47fbfcc28408d60db09afd9377, type: 3}
+      propertyPath: playerVotes.Array.size
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6295157954736484755, guid: 7204ad47fbfcc28408d60db09afd9377, type: 3}
       propertyPath: m_Name
       value: VoteOverlay
+      objectReference: {fileID: 0}
+    - target: {fileID: 6295157954736484755, guid: 7204ad47fbfcc28408d60db09afd9377, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2470,7 +2487,7 @@ PrefabInstance:
     - target: {fileID: 2503287989663052145, guid: 0222e62210192c74784291e76c8da69e, type: 3}
       propertyPath: SubmissionCounterPanel
       value: 
-      objectReference: {fileID: 6295157954736484755, guid: 7204ad47fbfcc28408d60db09afd9377, type: 3}
+      objectReference: {fileID: 1063037140}
     - target: {fileID: 5413717678879974092, guid: 0222e62210192c74784291e76c8da69e, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.29938

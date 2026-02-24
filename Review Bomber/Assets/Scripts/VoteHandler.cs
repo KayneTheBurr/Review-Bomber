@@ -9,6 +9,7 @@ public class VoteHandler : MonoBehaviour
     public StageManagerServer stageManagerServer;
 
     [SerializeField] private GameObject playerCell;
+    public Transform cellParent;
 
     public List<string> playerNames = new List<string>();
 
@@ -31,6 +32,7 @@ public class VoteHandler : MonoBehaviour
 
     private void Start()
     {
+        cellParent.gameObject.SetActive(false);
         numberPlayersVoted = 0;
         allPlayersVoted = false;
         listMade = false;
@@ -40,7 +42,7 @@ public class VoteHandler : MonoBehaviour
 
     private void Update()
     {
-        CheckVotes();
+        //CheckVotes();
 
         if (numberPlayersVoted == playerVotes.Count && playerVotes.Count >= 2)
         {
@@ -76,28 +78,30 @@ public class VoteHandler : MonoBehaviour
 
             for (int i = 0; i < playerNames.Count; i++)
             {
+                Debug.Log(i);
                 AddCellAndPopulateData(playerNames[i]);
             }
         }
     }
 
-    public void AddPlayerToLists(string playerName)
+    public void AddPlayerToLists(string p)
     {
-        if (!playerNames.Contains(playerName))
+        if (!playerNames.Contains(p))
         {
-            playerNames.Add(playerName);
+            playerNames.Add(p);
         }
     }
 
     public void AddCellAndPopulateData(string playerName)
     {
-        GameObject newCell = Instantiate(playerCell, gameObject.transform);
+        GameObject newCell = Instantiate(playerCell, cellParent);
 
         PlayerVote playerVote = newCell.GetComponent<PlayerVote>();
 
         if (playerVote != null)
         {
             playerVote.playerNameText.text = playerName;
+            playerVote.assignedPlayerName = playerName;
             playerVotes.Add(playerVote);
         }
     }
@@ -106,6 +110,7 @@ public class VoteHandler : MonoBehaviour
     {
         foreach (PlayerVote playerVote in playerVotes)
         {
+            Debug.Log(playerName + " has voted");
             if (playerVote.assignedPlayerName == playerName)
             {
                 playerVote.hasVoted = true;
@@ -116,8 +121,6 @@ public class VoteHandler : MonoBehaviour
 
     public void ResetVotes()
     {
-        if (playerVotes.Count == 0) return;
-
         foreach (PlayerVote playerVote in playerVotes)
         {
             playerVote.hasVoted = false;
