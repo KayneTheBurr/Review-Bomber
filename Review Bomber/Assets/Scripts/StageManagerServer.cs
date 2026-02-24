@@ -107,6 +107,10 @@ public class StageManagerServer : MonoBehaviour
                 {
                     PlayResultsStateSFX();
                 }
+                else if(value == SceneState.Tutorial)
+                {
+                    PlayTutorialSFX();
+                }
                 else
                 {
                     PlayStateChangeSFX();
