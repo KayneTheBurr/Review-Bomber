@@ -10,7 +10,6 @@ public class VoteHandler : MonoBehaviour
 
     [SerializeField] private GameObject playerCell;
 
-    public List<string> playerReferences = new List<string>();
     public List<string> playerNames = new List<string>();
 
     public int numberPlayersVoted = 0;
@@ -75,23 +74,22 @@ public class VoteHandler : MonoBehaviour
         {
             listMade = true;
 
-            for (int i = 0; i < playerReferences.Count; i++)
+            for (int i = 0; i < playerNames.Count; i++)
             {
-                AddCellAndPopulateData(playerReferences[i], playerNames[i]);
+                AddCellAndPopulateData(playerNames[i]);
             }
         }
     }
 
-    public void AddPlayerToLists(string playerReference, string playerName)
+    public void AddPlayerToLists(string playerName)
     {
-        if (!playerReferences.Contains(playerReference))
+        if (!playerNames.Contains(playerName))
         {
-            playerReferences.Add(playerReference);
             playerNames.Add(playerName);
         }
     }
 
-    public void AddCellAndPopulateData(string playerReference, string playerName)
+    public void AddCellAndPopulateData(string playerName)
     {
         GameObject newCell = Instantiate(playerCell, gameObject.transform);
 
@@ -99,17 +97,16 @@ public class VoteHandler : MonoBehaviour
 
         if (playerVote != null)
         {
-            playerVote.assignedPlayer = playerReference;
             playerVote.playerNameText.text = playerName;
             playerVotes.Add(playerVote);
         }
     }
 
-    public void PlayerVoted(string playerReference)
+    public void PlayerVoted(string playerName)
     {
         foreach (PlayerVote playerVote in playerVotes)
         {
-            if (playerVote.assignedPlayer == playerReference)
+            if (playerVote.assignedPlayerName == playerName)
             {
                 playerVote.hasVoted = true;
                 break;
