@@ -67,7 +67,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a95a6e417d4177749a1df85d7d554f64, type: 3}
-  m_Name: CRTTV
+  m_Name: Renderer2D 1
   m_EditorClassIdentifier: FronkonGames.Retro.CRTTV::FronkonGames.Retro.CRTTV.CRTTV
   m_Active: 1
   settings:
