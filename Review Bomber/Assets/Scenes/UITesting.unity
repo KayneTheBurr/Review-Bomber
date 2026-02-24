@@ -347,6 +347,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: UI_RESULTS
       objectReference: {fileID: 0}
+    - target: {fileID: 5467030542938172817, guid: 2ff5b5ed5f050204a9ab8f24021d7f20, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5864272187669201382, guid: 2ff5b5ed5f050204a9ab8f24021d7f20, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -446,7 +450,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1622690023702487468, guid: 5db35481fd1f2a34283356bca81b22b5, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7995366221185803422, guid: 5db35481fd1f2a34283356bca81b22b5, type: 3}
       propertyPath: m_Pivot.x
@@ -627,7 +631,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8573756681878107780, guid: b0a460dad1aeac04c862fa7cbecb1b28, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -725,6 +729,10 @@ PrefabInstance:
     - target: {fileID: 3031353137791709414, guid: e1432ad427cb03648bbd591cdd731f41, type: 3}
       propertyPath: m_Name
       value: UI_REVIEW
+      objectReference: {fileID: 0}
+    - target: {fileID: 3031353137791709414, guid: e1432ad427cb03648bbd591cdd731f41, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
