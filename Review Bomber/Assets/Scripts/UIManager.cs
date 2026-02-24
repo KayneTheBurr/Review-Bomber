@@ -70,7 +70,8 @@ public class UIManager : MonoBehaviour
     //[Header("Tutorial UI Elements")]
     //add the tutorial UI elements here after we make them
 
-
+    [Header("Submission Counter")]
+    public GameObject SubmissionCounterPanel;
     private void Awake()
     {
         if (instance == null) instance = this;
@@ -86,15 +87,27 @@ public class UIManager : MonoBehaviour
         if(reviewUI) reviewUI.SetActive(false);
         if (resultUI) resultUI.SetActive(false);
         if (tutorialUI) tutorialUI.SetActive(false);
+        if (SubmissionCounterPanel) SubmissionCounterPanel.SetActive(false);
 
         switch (screenName)
         {
             case "Lobby": if (lobbyUI) lobbyUI.SetActive(true); break;
             case "Tutorial": if (tutorialUI) tutorialUI.SetActive(true); break;
             case "Theme": if (themeUI) themeUI.SetActive(true); break;
-            case "Prompt": if (promptUI) promptUI.SetActive(true); break;
-            case "Review": if(reviewUI) reviewUI.SetActive(true); break;
-            case "Vote": if (voteUI) voteUI.SetActive(true); break;
+            case "Prompt":
+                if (promptUI) promptUI.SetActive(true);
+                if (SubmissionCounterPanel) SubmissionCounterPanel.SetActive(true);
+                break;
+
+            case "Review":
+                if (reviewUI) reviewUI.SetActive(true);
+                if (SubmissionCounterPanel) SubmissionCounterPanel.SetActive(true);
+                break;
+
+            case "Vote":
+                if (voteUI) voteUI.SetActive(true);
+                if (SubmissionCounterPanel) SubmissionCounterPanel.SetActive(true);
+                break;
             case "Results": if (resultUI) resultUI.SetActive(true); break;
             default: if (lobbyUI) lobbyUI.SetActive(true); break;
         }

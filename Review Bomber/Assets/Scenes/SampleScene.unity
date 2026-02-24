@@ -2370,6 +2370,10 @@ PrefabInstance:
       propertyPath: secondPlaceReviewName
       value: 
       objectReference: {fileID: 92774081}
+    - target: {fileID: 2503287989663052145, guid: 0222e62210192c74784291e76c8da69e, type: 3}
+      propertyPath: SubmissionCounterPanel
+      value: 
+      objectReference: {fileID: 6295157954736484755, guid: 7204ad47fbfcc28408d60db09afd9377, type: 3}
     - target: {fileID: 5413717678879974092, guid: 0222e62210192c74784291e76c8da69e, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.29938
