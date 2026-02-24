@@ -56,6 +56,9 @@ public class VoteHandler : MonoBehaviour
     private void CheckVotes()
     {
         numberPlayersVoted = 0;
+
+        if (playerVotes.Count == 0) { return; }
+
         foreach (PlayerVote playerVote in playerVotes)
         {
             if (playerVote.hasVoted)
