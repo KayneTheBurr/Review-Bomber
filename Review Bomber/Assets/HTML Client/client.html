@@ -481,6 +481,21 @@
             <button id="startBtn" style="display:none;">Start Game</button>
         </div>
 
+        <!-- WAIT (Mute) -->
+        <div id="screenWait" class="screen">
+            <div id="sceneStateWait" style="margin-bottom:15px;"></div>
+
+            <div class="box">
+                <div class="small">Please wait…</div>
+                <div style="font-weight:900; font-size:18px; margin-top:6px;">
+                    Wait for other players to finish.
+                </div>
+                <div class="small" style="margin-top:8px;">
+                    You will automatically move to the next phase when everyone is done.
+                </div>
+            </div>
+        </div>
+
         <!-- PROMPT -->
         <div id="screenPrompt" class="screen">
             <div id="sceneStatePrompt" style="margin-bottom:15px;"></div>
@@ -679,6 +694,10 @@
                     switch (state.scene) {
                         case "Lobby":
                             showScreen("screenLobby", msg);
+                            break;
+
+                        case "Mute":
+                            showScreen("screenWait", "Wait for other players to finish…");
                             break;
 
                         case "Prompt":

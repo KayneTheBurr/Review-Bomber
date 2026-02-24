@@ -107,7 +107,7 @@ public class StageManagerServer : MonoBehaviour
                 {
                     PlayResultsStateSFX();
                 }
-                else if(value == SceneState.Tutorial)
+                else if (value == SceneState.Tutorial)
                 {
                     PlayTutorialSFX();
                 }
@@ -369,7 +369,7 @@ public class StageManagerServer : MonoBehaviour
                                 VoteHandler.Instance.SetUpTheThing();
                                 AdvanceState();
                             }
-                                
+
                             break;
 
                         case "newRound":
@@ -386,6 +386,7 @@ public class StageManagerServer : MonoBehaviour
                             break;
 
                         case "choice":
+                            SendMuteTo(socket);
                             PlayAnswerSubmissionSFX();
                             HandleChoice(socket, p, msg);
                             break;
@@ -787,7 +788,10 @@ public class StageManagerServer : MonoBehaviour
             if (AllActivePlayersReadyForCurrentState())
                 AdvanceState();
             else
+            {
                 SendStateToAll();
+                SendMuteTo(conn); // keep submitter on wait screen
+            }
 
             return;
         }
@@ -801,7 +805,10 @@ public class StageManagerServer : MonoBehaviour
             if (AllActivePlayersReadyForCurrentState())
                 AdvanceState();
             else
+            {
                 SendStateToAll();
+                SendMuteTo(conn); // keep submitter on wait screen
+            }
 
             return;
         }
@@ -1185,32 +1192,7 @@ public class StageManagerServer : MonoBehaviour
         GameState state = new GameState
         {
             scene = "Mute",
-            /*
-            isFirst = p.isFirst,
 
-            theme = theme,
-            prompt = BuildPromptTextForClient(p),
-
-            // Prompt template (so client can display it if desired)
-            taglineTemplate = prompt,
-
-            // Review assignment for this player
-            assignedEntryIndex = p.assignedEntryIndex,
-            assignedTagline = GetAssignedTaglineFor(p),
-            reviewRating = (int)p.rating,
-            reviewRatingLabel = p.rating.ToString(),
-
-            // Vote display data
-            entryIndex = currentEntryIndex,
-            entryCount = entries != null ? entries.Count : 0,
-            currentTagline = GetCurrentEntryTagline(),
-            currentReview = GetCurrentEntryReview(),
-            currentReviewRating = GetCurrentEntryRatingLabel(),
-
-            // Buttons (ints) for Vote phase only
-            starButtons = (currentState == SceneState.Vote) ? starButtons : null,
-            */
-            // Results
             resultsText = (currentState == SceneState.Results) ? BuildResultsSummary() : null
         };
 
