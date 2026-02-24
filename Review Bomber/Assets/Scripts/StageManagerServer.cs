@@ -354,6 +354,7 @@ public class StageManagerServer : MonoBehaviour
                             }
 
                             p.name = msg.name;
+                            VoteHandler.Instance.AddPlayerToLists(p.name);
                             Debug.Log($"[Server] join from {p.name}");
                             PlayPlayerJoinSFX();
 
@@ -364,7 +365,11 @@ public class StageManagerServer : MonoBehaviour
 
                         case "start":
                             if (p.isFirst && (currentState == SceneState.Lobby))
+                            {
+                                VoteHandler.Instance.SetUpTheThing();
                                 AdvanceState();
+                            }
+                                
                             break;
 
                         case "newRound":
@@ -376,6 +381,7 @@ public class StageManagerServer : MonoBehaviour
 
                         case "input":
                             SendMuteTo(socket);
+                            VoteHandler.Instance.PlayerVoted(p.name);
                             HandleInput(socket, p, msg);
                             break;
 
@@ -899,7 +905,7 @@ public class StageManagerServer : MonoBehaviour
                 themeTimerRequested = true;
                 break;
         }
-
+        VoteHandler.Instance.ResetVotes();
         SendStateToAll();
         UpdateHostUI();
         Debug.Log("[Server] Advanced to " + currentState);

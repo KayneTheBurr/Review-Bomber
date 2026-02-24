@@ -10,6 +10,8 @@ public class VoteHandler : MonoBehaviour
 
     [SerializeField] private GameObject playerCell;
 
+    public List<string> playerNames = new List<string>();
+
     public int numberPlayersVoted = 0;
     public bool allPlayersVoted;
 
@@ -53,6 +55,9 @@ public class VoteHandler : MonoBehaviour
     private void CheckVotes()
     {
         numberPlayersVoted = 0;
+
+        if (playerVotes.Count == 0) { return; }
+
         foreach (PlayerVote playerVote in playerVotes)
         {
             if (playerVote.hasVoted)
@@ -69,21 +74,22 @@ public class VoteHandler : MonoBehaviour
         {
             listMade = true;
 
-            //make list
-            //for (int i = 0; i < stageManagerServer.player.Count; i++)
-
-            //need list of player references and names in stage manager server to do this, need to add that first
-
-            //{
-
-            //create cell and populate data for each player in the list, need to add player reference and name list first in stage manager server for this to work
-
-            //    AddCellAndPopulateData(stageManagerServer.playerReferences[i], stageManagerServer.playerNames[i]);
-            //}
+            for (int i = 0; i < playerNames.Count; i++)
+            {
+                AddCellAndPopulateData(playerNames[i]);
+            }
         }
     }
 
-    public void AddCellAndPopulateData(string playerReference, string playerName)
+    public void AddPlayerToLists(string playerName)
+    {
+        if (!playerNames.Contains(playerName))
+        {
+            playerNames.Add(playerName);
+        }
+    }
+
+    public void AddCellAndPopulateData(string playerName)
     {
         GameObject newCell = Instantiate(playerCell, gameObject.transform);
 
@@ -91,17 +97,16 @@ public class VoteHandler : MonoBehaviour
 
         if (playerVote != null)
         {
-            playerVote.assignedPlayer = playerReference;
             playerVote.playerNameText.text = playerName;
             playerVotes.Add(playerVote);
         }
     }
 
-    public void PlayerVoted(string playerReference)
+    public void PlayerVoted(string playerName)
     {
         foreach (PlayerVote playerVote in playerVotes)
         {
-            if (playerVote.assignedPlayer == playerReference)
+            if (playerVote.assignedPlayerName == playerName)
             {
                 playerVote.hasVoted = true;
                 break;
@@ -111,6 +116,8 @@ public class VoteHandler : MonoBehaviour
 
     public void ResetVotes()
     {
+        if (playerVotes.Count == 0) return;
+
         foreach (PlayerVote playerVote in playerVotes)
         {
             playerVote.hasVoted = false;

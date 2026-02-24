@@ -4,7 +4,7 @@ using TMPro;
 
 public class PlayerVote : MonoBehaviour
 {
-    public string assignedPlayer;
+    public string assignedPlayerName;
     public bool hasVoted;
     [SerializeField] private GameObject votedImage;
     public TMP_Text playerNameText;
