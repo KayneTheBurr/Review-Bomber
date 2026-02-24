@@ -10,6 +10,9 @@ public class VoteHandler : MonoBehaviour
 
     [SerializeField] private GameObject playerCell;
 
+    public List<string> playerReferences = new List<string>();
+    public List<string> playerNames = new List<string>();
+
     public int numberPlayersVoted = 0;
     public bool allPlayersVoted;
 
@@ -69,17 +72,19 @@ public class VoteHandler : MonoBehaviour
         {
             listMade = true;
 
-            //make list
-            //for (int i = 0; i < stageManagerServer.player.Count; i++)
+            for (int i = 0; i < playerReferences.Count; i++)
+            {
+                AddCellAndPopulateData(playerReferences[i], playerNames[i]);
+            }
+        }
+    }
 
-            //need list of player references and names in stage manager server to do this, need to add that first
-
-            //{
-
-            //create cell and populate data for each player in the list, need to add player reference and name list first in stage manager server for this to work
-
-            //    AddCellAndPopulateData(stageManagerServer.playerReferences[i], stageManagerServer.playerNames[i]);
-            //}
+    public void AddPlayerToLists(string playerReference, string playerName)
+    {
+        if (!playerReferences.Contains(playerReference))
+        {
+            playerReferences.Add(playerReference);
+            playerNames.Add(playerName);
         }
     }
 
