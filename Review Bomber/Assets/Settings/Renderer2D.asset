@@ -71,53 +71,53 @@ MonoBehaviour:
   m_EditorClassIdentifier: FronkonGames.Retro.CRTTV::FronkonGames.Retro.CRTTV.CRTTV
   m_Active: 1
   settings:
-    intensity: 1
-    shadowmaskStrength: 1
-    shadowmaskLuminosity: 1
-    shadowmaskScale: 0.5
+    intensity: 0.329
+    shadowmaskStrength: 0.197
+    shadowmaskLuminosity: 0.89
+    shadowmaskScale: 0.426
     shadowmaskVerticalGapHardness: 0.1
-    shadowmaskHorizontalGapHardness: 0.8
-    shadowmaskColorOffset: {x: 0, y: -0.3, z: -0.6}
-    fishEyeStrength: 0.2
+    shadowmaskHorizontalGapHardness: 0.292
+    shadowmaskColorOffset: {x: 0, y: 0.22, z: 0}
+    fishEyeStrength: 0
     fishEyeZoom: {x: 1, y: 1}
-    distortion: 0.17
-    distortionSpeed: 1
-    distortionAmplitude: 2
-    vignetteSmoothness: 0.7
+    distortion: 0
+    distortionSpeed: -10
+    distortionAmplitude: 0.55
+    vignetteSmoothness: 0
     vignetteRounding: 0.5
-    vignetteBorders: {x: 0, y: 0.5}
-    shineStrength: 0.3
-    shineColor: {r: 0.5, g: 0.5, b: 0.5, a: 0.5}
+    vignetteBorders: {x: 0, y: -0.05}
+    shineStrength: 0
+    shineColor: {r: 1, g: 1, b: 1, a: 0.5}
     shinePosition: {x: 0.5, y: 1}
-    rgbOffsetStrength: 0.25
-    colorBleedingStrength: 0.25
-    colorBleedingDistance: 0.5
-    colorCurves: {r: 0.95, g: 1.05, b: 0.95, a: 1}
-    gammaColor: {x: 0.9, y: 0.7, z: 1.2, w: 1}
+    rgbOffsetStrength: 0.453
+    colorBleedingStrength: 0.29
+    colorBleedingDistance: 0.31
+    colorCurves: {r: 1, g: 1, b: 1, a: 0}
+    gammaColor: {x: 0.67, y: 0.7, z: 0.67, w: 0}
     scanlines: 1
     scanlinesCount: 1.25
-    scanlinesVelocity: 3.5
+    scanlinesVelocity: -9.4
     interferenceStrength: 0.2
     interferencePeakStrength: 0.3
     interferencePeakPosition: 0.2
-    shakeStrength: 1
-    shakeRate: 0.2
-    movementStrength: 1
+    shakeStrength: 0.466
+    shakeRate: 0
+    movementStrength: 0
     movementRate: 0.2
-    movementSpeed: 0.4
-    grain: 0
+    movementSpeed: 0.294
+    grain: 0.143
     staticNoise: 0
-    barStrength: 0.1
-    barHeight: 6
-    barSpeed: 4
-    barOverflow: 1.2
-    flickerStrength: 0.1
-    flickerSpeed: 50
-    brightness: 0
-    contrast: 1
-    gamma: 1
+    barStrength: 1
+    barHeight: 8.81
+    barSpeed: -1.8
+    barOverflow: 0.77
+    flickerStrength: 0
+    flickerSpeed: 0
+    brightness: 0.65
+    contrast: 3.73
+    gamma: 0.43
     hue: 0
-    saturation: 1
+    saturation: 1.67
     affectSceneView: 0
     whenToInsert: 550
     useScaledTime: 1
