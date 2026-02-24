@@ -93,7 +93,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 30
+  m_fontSize: 18
   m_fontSizeBase: 40
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -334,5 +334,6 @@ MonoBehaviour:
   assignedPlayer: 
   hasVoted: 0
   votedImage: {fileID: 5437269486879338267}
+  playerNameText: {fileID: 9125770494248642282}
   notVotedColor: {r: 1, g: 1, b: 1, a: 1}
   yesVotedColor: {r: 0.6431373, g: 0.9019608, b: 0.7019608, a: 1}
