@@ -433,11 +433,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 708204310600940632, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
       propertyPath: m_fontSize
-      value: 60
+      value: 57
       objectReference: {fileID: 0}
     - target: {fileID: 708204310600940632, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
       propertyPath: m_fontSizeBase
-      value: 60
+      value: 57
       objectReference: {fileID: 0}
     - target: {fileID: 751528465066625155, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
       propertyPath: m_Pivot.x
@@ -525,7 +525,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1784255492562549654, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 357.8
+      value: 387
       objectReference: {fileID: 0}
     - target: {fileID: 4794691844719841112, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
       propertyPath: m_text
@@ -549,7 +549,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9160009333593348019, guid: 7cbc25c07ac3b054196f4d4be0dc0fec, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 357.8
+      value: 387
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
@@ -1365,7 +1365,7 @@ MonoBehaviour:
   actionsDatabase: {fileID: 0}
   localSettings:
     useTypeWriter: 1
-    startTypewriterMode: 3
+    startTypewriterMode: -1
     hideAppearancesOnSkip: 0
     hideDisappearancesOnSkip: 0
     triggerEventsOnSkip: 0
