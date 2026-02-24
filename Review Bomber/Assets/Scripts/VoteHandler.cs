@@ -18,7 +18,7 @@ public class VoteHandler : MonoBehaviour
     {
         CheckVotes();
 
-        if (numberPlayersVoted == playerVotes.Count)
+        if (numberPlayersVoted == playerVotes.Count && playerVotes.Count >= 2)
         {
             allPlayersVoted = true;
         }

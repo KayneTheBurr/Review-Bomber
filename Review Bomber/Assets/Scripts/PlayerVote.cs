@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class PlayerVote : MonoBehaviour
 {
+    public string assignedPlayer;
     public bool hasVoted;
     [SerializeField] private GameObject votedImage;
     [SerializeField] private Color notVotedColor;
