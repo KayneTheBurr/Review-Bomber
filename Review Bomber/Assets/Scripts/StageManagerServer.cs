@@ -78,7 +78,6 @@ public class StageManagerServer : MonoBehaviour
     public AudioClip stateChangeSFX; //SFX for whenever the game state changes (e.g. Lobby -> Theme, Prompt -> Review, etc).
     public AudioClip resultStateSFX; //SFX for when the game enters the Results state.
     public AudioClip countDownSFX; //SFX for the countdown during the phases
-    public AudioClip answerSubmissionSFX; //SFX for the player answer submission
 
     // No unicode in buttons; just ints
     public int[] starButtons = new int[] { 1, 2, 3, 4, 5 };
@@ -93,7 +92,7 @@ public class StageManagerServer : MonoBehaviour
     public enum ReviewRating { Good = 0, Average = 1, Bad = 2 }
 
     [SerializeField] private SceneState _currentState = SceneState.Lobby; // for detecting state changes in Update()
-    
+
     public SceneState currentState
     {
         get { return _currentState; }
@@ -190,9 +189,17 @@ public class StageManagerServer : MonoBehaviour
         public string name;
         public bool isFirst;
 
+        // One-shot toast sent to this player (for reconnect)
+        public string toastOnce;
+
+
         // Prompt phase inputs
         public string blankA;
         public string blankB;
+        public bool hasSubmittedPrompt = false;
+
+        // Review phase submit flag
+        public bool hasSubmittedReview = false;
 
         // Review phase assignment
         public int assignedEntryIndex = -1;
@@ -230,6 +237,9 @@ public class StageManagerServer : MonoBehaviour
 
     // Connection -> Player
     private Dictionary<IWebSocketConnection, Player> players = new Dictionary<IWebSocketConnection, Player>();
+
+    // Keep player identity by name so reconnect can reclaim the old slot.
+    private Dictionary<string, Player> disconnectedByName = new Dictionary<string, Player>();
     private bool firstAssigned = false;
     private WebSocketServer server;
     private bool serverRunning = false;
@@ -283,9 +293,17 @@ public class StageManagerServer : MonoBehaviour
                 {
                     bool wasFirst = players.ContainsKey(socket) && players[socket].isFirst;
 
-                    players.Remove(socket);
-                    RebuildOrderedConnections();
+                    if (players.ContainsKey(socket))
+                    {
+                        var left = players[socket];
+                        if (!string.IsNullOrEmpty(left.name))
+                        {
+                            disconnectedByName[left.name] = left;
+                        }
+                        players.Remove(socket);
+                    }
 
+                    RebuildOrderedConnections();
                     RefreshConnectedClientsDebug();
 
                     if (wasFirst)
@@ -301,6 +319,7 @@ public class StageManagerServer : MonoBehaviour
 
                     SendStateToAll();
                     UpdateHostUI();
+                    TryAdvanceIfReady_AfterConnectOrDisconnect();
                 });
             };
 
@@ -316,9 +335,25 @@ public class StageManagerServer : MonoBehaviour
                     switch (msg.type)
                     {
                         case "join":
+                            // Claim identity by name (reconnect-friendly).
+                            // If the same name disconnected earlier, reattach that Player object to this new socket.
+                            if (!string.IsNullOrEmpty(msg.name) && disconnectedByName.ContainsKey(msg.name))
+                            {
+                                var oldP = disconnectedByName[msg.name];
+                                disconnectedByName.Remove(msg.name);
+
+                                oldP.toastOnce = $"{msg.name} welcome back";
+                                players[socket] = oldP;
+                                p = oldP;
+                            }
+
                             p.name = msg.name;
                             Debug.Log($"[Server] join from {p.name}");
                             PlayPlayerJoinSFX();
+
+                            // If this reconnect happens during an in-progress stage, don't stall the game.
+                            // (They'll either already have submitted, or they can submit now.)
+                            TryAdvanceIfReady_AfterConnectOrDisconnect();
                             break;
 
                         case "start":
@@ -334,13 +369,11 @@ public class StageManagerServer : MonoBehaviour
                             break;
 
                         case "input":
-                            PlayAnswerSubmissionSFX();
                             HandleInput(socket, p, msg);
                             break;
 
                         case "choice":
                             HandleChoice(socket, p, msg);
-                            PlayAnswerSubmissionSFX();
                             break;
                     }
 
@@ -696,14 +729,6 @@ public class StageManagerServer : MonoBehaviour
         }
     }
 
-    void PlayAnswerSubmissionSFX()
-    {
-        if(sfxSource != null && answerSubmissionSFX != null)
-        {
-            sfxSource.PlayOneShot(answerSubmissionSFX);
-        }
-    }
-
     IEnumerator StopCountDownAfter(float seconds)
     {
         yield return new WaitForSeconds(seconds);
@@ -721,30 +746,30 @@ public class StageManagerServer : MonoBehaviour
         if (currentState == SceneState.Prompt)
         {
             // Two blanks A/B
-            p.blankA = msg.a;
-            p.blankB = msg.b;
+            p.blankA = msg.a ?? "";
+            p.blankB = msg.b ?? "";
+            p.hasSubmittedPrompt = true;
 
-            responsesReceived++;
+            Debug.Log($"[Server] Prompt received from {(p.name ?? "(unnamed)")}");
 
-            Debug.Log($"[Server] Prompt received: {responsesReceived}/{players.Count} from {(p.name ?? "(unnamed)")}");
-
-            if (responsesReceived >= players.Count)
-            {
+            if (AllActivePlayersReadyForCurrentState())
                 AdvanceState();
-            }
+            else
+                SendStateToAll();
+
             return;
         }
 
         if (currentState == SceneState.Review)
         {
-            PlayAnswerSubmissionSFX();
-            p.reviewText = msg.text;
+            p.reviewText = msg.text ?? "";
+            p.hasSubmittedReview = true;
 
-            responsesReceived++;
-            if (responsesReceived >= players.Count)
-            {
+            if (AllActivePlayersReadyForCurrentState())
                 AdvanceState();
-            }
+            else
+                SendStateToAll();
+
             return;
         }
     }
@@ -841,7 +866,7 @@ public class StageManagerServer : MonoBehaviour
 
             case SceneState.Results:
                 Debug.Log("[Server] Transition Results -> Theme");
-                StartNewRound();                 
+                StartNewRound();
                 PickThemeAndPromptForRound();
                 currentState = SceneState.Theme;
                 themeTimerRequested = true;
@@ -864,8 +889,10 @@ public class StageManagerServer : MonoBehaviour
         foreach (var kv in players)
         {
             var p = kv.Value;
-            p.blankA = "";
-            p.blankB = "";
+            p.blankA = null;
+            p.blankB = null;
+            p.hasSubmittedPrompt = false;
+            p.hasSubmittedReview = false;
             p.assignedEntryIndex = -1;
             p.rating = ReviewRating.Average;
             p.reviewText = "";
@@ -986,6 +1013,48 @@ public class StageManagerServer : MonoBehaviour
         Debug.Log("[Server] Applied reviews to entries");
     }
 
+
+    bool AllActivePlayersReadyForCurrentState()
+    {
+        if (players.Count == 0) return false;
+
+        if (currentState == SceneState.Prompt)
+        {
+            foreach (var kv in players)
+                if (!kv.Value.hasSubmittedPrompt) return false;
+            return true;
+        }
+
+        if (currentState == SceneState.Review)
+        {
+            foreach (var kv in players)
+                if (!kv.Value.hasSubmittedReview) return false;
+            return true;
+        }
+
+        if (currentState == SceneState.Vote)
+        {
+            foreach (var kv in players)
+                if (!kv.Value.hasVotedThisEntry) return false;
+            return true;
+        }
+
+        return false;
+    }
+
+    void TryAdvanceIfReady_AfterConnectOrDisconnect()
+    {
+        if (AllActivePlayersReadyForCurrentState())
+        {
+            Debug.Log("[Server] Everyone ready after connect/disconnect -> advancing");
+            AdvanceState();
+        }
+        else
+        {
+            SendStateToAll();
+        }
+    }
+
     // ------------------------
     // Voting (Option A sequential)
     // ------------------------
@@ -1066,6 +1135,9 @@ public class StageManagerServer : MonoBehaviour
         try
         {
             conn.Send(JsonUtility.ToJson(state));
+
+            // Clear one-shot toast after sending
+            if (!string.IsNullOrEmpty(p.toastOnce)) p.toastOnce = null;
         }
         catch (Exception ex)
         {
@@ -1218,6 +1290,9 @@ public class StageManagerServer : MonoBehaviour
 
         // Results
         public string resultsText;
+
+        // One-shot message for this client (e.g., welcome back)
+        public string toast;
     }
 }
 

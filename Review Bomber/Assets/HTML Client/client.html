@@ -5,9 +5,8 @@
     <title>Review Bomber Client</title>
     <style>
         :root {
-
-            --bg: #dbe8ff; 
-            --bg2: #dbe8ff; 
+            --bg: #dbe8ff;
+            --bg2: #dbe8ff;
             --ink: #0b1b33;
             --muted: #5b6d86;
             --panel: #ffffff;
@@ -23,7 +22,7 @@
             --shadow: 0 10px 24px rgba(9, 38, 84, .10);
             --shadow2: 0 6px 16px rgba(9, 38, 84, .08);
             --maxW: 980px;
-            --radius: 0px; 
+            --radius: 0px;
             --pad: 14px;
         }
 
@@ -205,7 +204,7 @@
             }
 
         textarea {
-            height: 120px; 
+            height: 120px;
             max-height: 180px;
             resize: vertical;
             line-height: 1.35;
@@ -253,7 +252,7 @@
         /* ===== Amazon-ish 评论块：方框 + 角落切角 ===== */
         .box {
             margin: 12px 0 14px;
-            padding: 18px 12px 12px 34px; 
+            padding: 18px 12px 12px 34px;
             background: #ffffff;
             border: 2px solid var(--line2);
             box-shadow: var(--shadow2);
@@ -422,9 +421,29 @@
                 background-position: 0% 50%;
             }
         }
+
+        /* One-shot toast (e.g., welcome back) */
+        .toast {
+            position: fixed;
+            left: 50%;
+            top: 18px;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.96);
+            border: 1px solid var(--line2);
+            border-radius: 12px;
+            padding: 10px 14px;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+            color: var(--ink);
+            z-index: 9999;
+            max-width: 90vw;
+            font-size: 0.95rem;
+        }
     </style>
 </head>
 <body>
+    <div id="toast" class="toast" style="display:none;"></div>
+
+
     <div class="appShell">
         <div class="heroTitle">
             <h1>Review Bomber</h1>
@@ -625,10 +644,20 @@
                 ws.onmessage = (event) => {
                     lastServerMessageAt = new Date();
                     const state = JSON.parse(event.data);
+                    const toastEl = document.getElementById("toast");
+                    if (state.toast) {
+                        toastEl.textContent = state.toast;
+                        toastEl.style.display = "block";
+                        clearTimeout(toastEl._t);
+                        toastEl._t = setTimeout(() => {
+                            toastEl.style.display = "none";
+                        }, 2500);
+                    }
+
                     const sceneChanged = (state.scene !== lastScene);
                     lastScene = state.scene;
                     const msg = state.prompt || "";
-                  
+
                     if (state.scene !== "Vote") {
                         voteLocked = false;
                         lastVoteEntryIndex = -1;
@@ -655,13 +684,13 @@
                         case "Prompt":
                             showScreen("screenPrompt", msg);
                             document.getElementById("taglineTemplateText").innerText = state.taglineTemplate || "";
-                            if (sceneChanged) clearPromptInputs();   
+                            if (sceneChanged) clearPromptInputs();
                             break;
 
                         case "Review":
                             showScreen("screenReview", msg);
                             document.getElementById("assignedTaglineText").innerText = state.assignedTagline || "";
-                            if (sceneChanged) clearReviewInput();    
+                            if (sceneChanged) clearReviewInput();
                             break;
 
                         case "Vote":
